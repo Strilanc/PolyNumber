@@ -24,7 +24,16 @@ public static class TestingUtilities {
         Assert.AreEqual(value1, value2);
     }
     public static void AssertSequenceEquals<T>(this IEnumerable<T> value1, IEnumerable<T> value2) {
+        var r1 = value1.ToArray();
+        var r2 = value2.ToArray();
+        var b = r1.SequenceEqual(r2);
+        if (!b) {
+            Assert.Fail("{0} should be equal to {1}", string.Join(", ", r1), string.Join(", ", r2));
+        }
         Assert.IsTrue(value1.SequenceEqual(value2));
+    }
+    public static void AssertSequenceEquals<T>(this IEnumerable<T> value1, params T[] value2) {
+        value1.AssertSequenceEquals(value2.AsEnumerable());
     }
     public static void AssertSequenceSimilar<T>(this IEnumerable<T> value1, IEnumerable<T> value2) {
         using (var e1 = value1.GetEnumerator()) {
