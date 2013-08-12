@@ -1,66 +1,106 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Numerics;
+using MoreLinq;
+using Strilanc.Exceptions;
 using Strilanc.LinqToCollections;
 using System.Linq;
 
 public static class CollectionUtil {
-    public static IEnumerable<IReadOnlyList<T>> CombinationsOfSize<T>(this IReadOnlyList<T> items, int size) {
+    private static IReadOnlyList<T> AnonymousList<T>(Func<int> counter, Func<int, T> getter, IEnumerable<T> optionalEfficientIterator = null) {
+        return new AnonymousReadOnlyList<T>(counter, getter, optionalEfficientIterator);
+    }
+
+    public static IEnumerable<IReadOnlyList<T>> Choose<T>(this IReadOnlyList<T> items, int size) {
+        return items.ChooseHelper(size);
+    }
+    private static IEnumerable<IImmutableList<T>> ChooseHelper<T>(this IReadOnlyList<T> items, int size) {
         if (items == null) throw new ArgumentNullException("items");
         if (size < 0) throw new ArgumentOutOfRangeException("size", "size < 0");
-        if (size == 0) return new[] {new T[0]};
-        if (size > items.Count) return new T[0][];
-        return from i in items.Count.Range()
-               let head = items[i]
-               from tail in items.Skip(i + 1).CombinationsOfSize(size - 1)
-               select new[] {head}.Concat(tail).ToArray();
+        if (size == 0) return new[] { ImmutableList.Create<T>() };
+        if (size > items.Count) return new ImmutableList<T>[0];
+        return from iv in items.Index()
+               let head = iv.Value
+               let tail = items.Skip(iv.Key + 1)
+               let tailChoices = tail.ChooseHelper(size - 1)
+               from tailChoice in tailChoices
+               select tailChoice.Insert(0, head);
     }
+
     public static IEnumerable<T> Concat<T>(this IEnumerable<IEnumerable<T>> sequence) {
-        return from e in sequence
-               from j in e
-               select j;
+        return sequence.SelectMany(e => e);
     }
-    public static IEnumerable<Tuple<T, T>> Cross<T>(this IEnumerable<T> list1, IEnumerable<T> list2) {
-        return from e in list1
-               from j in list2
-               select Tuple.Create(e, j);
+    public static IEnumerable<Tuple<T, T>> Cross<T>(this IEnumerable<T> sequence1, IEnumerable<T> sequence2) {
+        if (sequence1 == null) throw new ArgumentNullException("sequence1");
+        if (sequence2 == null) throw new ArgumentNullException("sequence2");
+        return from item1 in sequence1
+               from item2 in sequence2
+               select Tuple.Create(item1, item2);
     }
     public static IReadOnlyList<Tuple<T, T>> Cross<T>(this IReadOnlyList<T> list1, IReadOnlyList<T> list2) {
-        return new AnonymousReadOnlyList<Tuple<T, T>>(
+        if (list1 == null) throw new ArgumentNullException("list1");
+        if (list2 == null) throw new ArgumentNullException("list2");
+        return AnonymousList(
             () => list1.Count * list2.Count,
             i => {
-                var n = list1.Count;
-                var r1 = i%n;
-                var r2 = i/n;
-                return Tuple.Create(list1[r1], list2[r2]);
-            });
+                var n = list2.Count;
+                var index1 = i / n;
+                var index2 = i % n;
+                return Tuple.Create(list1[index1], list2[index2]);
+            },
+            list1.AsEnumerable().Cross(list2.AsEnumerable()));
     }
-    public static IEnumerable<IReadOnlyList<T>> ContiguousSubSequencesOfSize<T>(this IEnumerable<T> list, int size) {
-        var q = new Queue<T>();
-        foreach (var e in list) {
-            q.Enqueue(e);
-            if (q.Count >= size) {
-                yield return q.ToArray();
-                q.Dequeue();
-            }
+
+    public static IEnumerable<TAggregate> Stream<TAggregate, TItem>(this IEnumerable<TItem> sequence, TAggregate seed, Func<TAggregate, TItem, TAggregate> aggregator) {
+        if (sequence == null) throw new ArgumentNullException("sequence");
+        if (aggregator == null) throw new ArgumentNullException("aggregator");
+        foreach (var item in sequence) {
+            seed = aggregator(seed, item);
+            yield return seed;
         }
     }
-    public static IReadOnlyList<IReadOnlyList<T>> ContiguousSubListsOfSize<T>(this IReadOnlyList<T> list, int size) {
-        return (list.Count - size + 1).Range().Select(i => list.Skip(i).Take(size));
+    public static IEnumerable<int> Indexes<T>(this IEnumerable<T> sequence) {
+        if (sequence == null) throw new ArgumentNullException("sequence");
+        return sequence.Select((e, i) => i);
+    }
+    public static IReadOnlyList<int> Indexes<T>(this IReadOnlyList<T> list) {
+        if (list == null) throw new ArgumentNullException("list");
+        return list.Select((e, i) => i);
+    }
+    public static IEnumerable<IReadOnlyList<T>> Window<T>(this IEnumerable<T> sequence, int windowSize) {
+        if (sequence == null) throw new ArgumentNullException("sequence");
+        if (windowSize <= 0) throw new ArgumentNotPositiveException("windowSize");
+        return sequence
+            .Stream(
+                ImmutableList.Create<T>(), 
+                (window, item) => 
+                    (window.Count < windowSize ? window : window.RemoveAt(0))
+                    .Add(item))
+            .Skip(windowSize - 1);
+    }
+    public static IReadOnlyList<IReadOnlyList<T>> Window<T>(this IReadOnlyList<T> list, int windowSize) {
+        if (list == null) throw new ArgumentNullException("list");
+        if (windowSize <= 0) throw new ArgumentNotPositiveException("windowSize");
+        return list
+            .Indexes()
+            .SkipLast(windowSize - 1)
+            .Select(i => list.Skip(i).Take(windowSize));
+    }
+    public static IReadOnlyList<int> RangeInclusive(this int max) {
+        if (max < 0) throw new ArgumentNegativeException("max < 0");
+        return (max + 1).Range();
     }
     public static BigInteger Product(this IEnumerable<BigInteger> sequence) {
+        if (sequence == null) throw new ArgumentNullException("sequence");
         return sequence.Aggregate(BigInteger.One, (a, e) => a * e);
     }
     public static BigInteger Sum(this IEnumerable<BigInteger> sequence) {
+        if (sequence == null) throw new ArgumentNullException("sequence");
         return sequence.Aggregate(BigInteger.Zero, (a, e) => a + e);
     }
-    public static IReadOnlyList<int> UpTo(this int max) {
-        return (max + 1).Range();
-    }
-    public static IReadOnlyList<int> UpTo(this int min, int max) {
-        return (max + 1).Range().Skip(min);
-    }
     public static BigInteger Product(this Tuple<BigInteger, BigInteger> value) {
+        if (value == null) throw new ArgumentNullException("value");
         return value.Item1*value.Item2;
     }
 }

@@ -74,7 +74,7 @@ public struct PolyNumber {
             new[] {new {x=-xx,y=s.EvaluateAt(-xx)}}
             .Concat(criticalPoints)
             .Concat(new[] { new { x = xx, y = s.EvaluateAt(xx) } })
-            .ContiguousSubSequencesOfSize(2)
+            .Window(2)
             .Where(e => e[0].y.Sign != e[1].y.Sign);
         foreach (var transition in transitions) {
             if (transition[0].y.Sign == 0) {
@@ -105,9 +105,9 @@ public struct PolyNumber {
     public static PolyNumber operator +(PolyNumber value1, PolyNumber value2) {
         var degree = value1.Degree + value2.Degree;
         return FromCoefficients(
-            0.UpTo(degree)
+            degree.RangeInclusive()
             .Select(i => 
-                i.UpTo()
+                i.RangeInclusive()
                 .Select(j => value1.Coefficient(j)*value2.Coefficient(i - j))
                 .Sum()));
     }
@@ -117,19 +117,18 @@ public struct PolyNumber {
         var roots2 = new BigInteger[] {3, 4};
         var roots3 = roots1.Cross(roots2).Select(e => e.Product());
 
-
-        var coefs3 = degree.UpTo()
+        var coefs3 = degree.RangeInclusive()
             .Select(i =>
                 roots1.Cross(roots2)
-                .CombinationsOfSize(i)
+                .Choose(i)
                 .Select(e => e.Select(f => f.Product()))
                 .Select(e => e.Product())
                 .Sum())
             .ToArray();
-        var coefs4 = degree.UpTo()
+        var coefs4 = degree.RangeInclusive()
             .Select(i =>
                 roots1.Cross(roots2)
-                .CombinationsOfSize(i)
+                .Choose(i)
                 .Select(e => e.Select(f => f.Product()))
                 .Select(e => e.Product())
                 .Sum())

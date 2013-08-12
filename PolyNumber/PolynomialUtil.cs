@@ -9,9 +9,9 @@ public static class PolynomialUtil {
     }
     public static IReadOnlyList<BigInteger> RootsToCoefficients(this IEnumerable<BigInteger> roots) {
         var cached = roots.Select(e => -e).ToArray();
-        return cached.Length.UpTo()
+        return cached.Length.RangeInclusive()
             .Select(i =>
-                cached.CombinationsOfSize(i)
+                cached.Choose(i)
                 .Select(f => f.Product())
                 .Sum())
             .ToArray();
