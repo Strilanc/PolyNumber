@@ -17,12 +17,12 @@ public class PolynomialUtilTest {
     [TestMethod]
     public void Tessssss() {
         var es = 5.Range().Select(e => (BigInteger)e);
-        for (var i = 0; i < es.Count; i++) {
-            for (var j = 0; j < es.Count; j++) {
-                for (var k = 0; k < es.Count; k++) {
-                    var list1 = es.Take(i);
-                    var list2 = es.TakeLast(j);
-                    var choiceCount = k;
+        for (var i1 = 0; i1 < es.Count; i1++) {
+            for (var i2 = 0; i2 < es.Count; i2++) {
+                for (var i3 = 0; i3 < es.Count; i3++) {
+                    var list1 = es.Take(i1);
+                    var list2 = es.TakeLast(i2);
+                    var choiceCount = i3;
 
                     var d = from choice1 in list1.Indexes().ChooseWithReplacement(choiceCount, list2.Count)
                             let y = from item1 in choice1
@@ -41,22 +41,30 @@ public class PolynomialUtilTest {
                     var expected = list1.Cross(list2).Choose(choiceCount).Select(e => e.ToArray()).ToArray();
                     d.AssertHasSimilarItemsIgnoringOrder(expected);
 
-                    var d2 = from x3 in CollectionUtil.DecreasingSequencesOfSize(
-                                 length: list1.Count, 
-                                 total: choiceCount, 
-                                 max: list2.Count)
-                             from x4 in x3.Permutations()
-                             let y = from choiceCounted in x4.Index()
-                                     let item1Count = choiceCounted.Value
-                                     where item1Count > 0
-                                     let item1Value = list1[choiceCounted.Key]
-                                     let t1 = BigInteger.Pow(item1Value, item1Count)
-                                     select from choice2 in list2.Choose(item1Count)
-                                            select choice2.Product()*t1
-                             select y.Select(e => e.Sum()).Product();
+                    var coefs2 = list2.Count.RangeInclusive()
+                                      .Select(i => list2.Choose(i).Select(e => e.Product()).Sum())
+                                      .ToArray();
+                    var L = CollectionUtil.DecreasingSequencesOfSize(length: list1.Count, total: choiceCount, max: list2.Count);
+                    var d2 =
+                        L
+                        .SelectMany(f => f.Permutations())
+                        .Select(x4 =>
+                            x4
+                            .Select((e, i) => coefs2[e] * BigInteger.Pow(list1[i], e))
+                            .Product())
+                        .Sum();
+                    var d3 =
+                        (from f in L
+                         let f2 = f.Select(e => coefs2[e]).Product()
+                         let y = from p in f.Permutations()
+                                 select (from r in p.Index()
+                                         select BigInteger.Pow(list1[r.Key], r.Value)
+                                        ).Product()
+                         select y.Sum()*f2
+                        ).Sum();
                     var r1 = expected.Select(e => e.Select(f => f.Product()).Product()).Sum();
-                    var r2 = d2.Sum();
-                    r1.AssertEquals(r2);
+                    r1.AssertEquals(d2);
+                    r1.AssertEquals(d3);
                 }
             }
         }
