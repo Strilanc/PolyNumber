@@ -12,6 +12,38 @@ public static class CollectionUtil {
         return new AnonymousReadOnlyList<T>(counter, getter, optionalEfficientIterator);
     }
 
+    /// <summary>
+    /// Enumerates all of the ways that it's possible one item from each collection in a sequence.
+    /// For example, the choice combinations of [[1,2],[3,4,5]] are (in some order): {[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]}.
+    /// </summary>
+    public static IEnumerable<IReadOnlyList<T>> AllChoiceCombinations<T>(this IEnumerable<IEnumerable<T>> sequenceOfChoices) {
+        using (var e = sequenceOfChoices.GetEnumerator().AllChoiceCombinationsOfRemainder()) {
+            while (e.MoveNext()) {
+                yield return e.Current;
+            }
+        }
+    }
+    private static IEnumerator<IImmutableList<T>> AllChoiceCombinationsOfRemainder<T>(this IEnumerator<IEnumerable<T>> sequenceOfChoices) {
+        if (!sequenceOfChoices.MoveNext()) {
+            yield return ImmutableList.Create<T>();
+            yield break;
+        }
+
+        var headChoices = sequenceOfChoices.Current;
+        var tailChoices = sequenceOfChoices.AllChoiceCombinationsOfRemainder();
+        using (var e = tailChoices) {
+            while (e.MoveNext()) {
+                var tailChoice = e.Current;
+                foreach (var headChoice in headChoices) {
+                    yield return tailChoice.Insert(0, headChoice);
+                }
+            }
+        }
+    }
+    
+    public static IEnumerable<IReadOnlyList<T>> Choose<T>(this IEnumerable<T> items, int size) {
+        return items.ToArray().ChooseHelper(size);
+    }
     public static IEnumerable<IReadOnlyList<T>> Choose<T>(this IReadOnlyList<T> items, int size) {
         return items.ChooseHelper(size);
     }
@@ -28,6 +60,26 @@ public static class CollectionUtil {
                select tailChoice.Insert(0, head);
     }
 
+    public static IEnumerable<IReadOnlyList<T>> ChooseWithReplacement<T>(this IReadOnlyList<T> items, int total, int maxRepeatCount) {
+        return items.ChooseWithReplacementHelper(total, maxRepeatCount, 0);
+    }
+    private static IEnumerable<IImmutableList<T>> ChooseWithReplacementHelper<T>(this IReadOnlyList<T> items, int total, int maxRepeatCount, int curRepeatCount) {
+        if (items == null) throw new ArgumentNullException("items");
+        if (total < 0) throw new ArgumentOutOfRangeException("total", "total < 0");
+        if (total == 0) return new[] { ImmutableList.Create<T>() };
+
+        return from iv in items.Index()
+               let head = iv.Value
+               where iv.Key > 0 || curRepeatCount < maxRepeatCount
+               let tail = items.Skip(iv.Key)
+               let tailChoices = tail.ChooseWithReplacementHelper(
+                    total - 1, 
+                    maxRepeatCount,
+                    iv.Key == 0 ? curRepeatCount + 1 : 1)
+               from tailChoice in tailChoices
+               select tailChoice.Insert(0, head);
+    }
+
     public static IEnumerable<IReadOnlyList<T>> ChooseWithReplacement<T>(this IReadOnlyList<T> items, int total) {
         return items.ChooseWithReplacementHelper(total);
     }
@@ -35,6 +87,7 @@ public static class CollectionUtil {
         if (items == null) throw new ArgumentNullException("items");
         if (total < 0) throw new ArgumentOutOfRangeException("total", "total < 0");
         if (total == 0) return new[] { ImmutableList.Create<T>() };
+
         return from iv in items.Index()
                let head = iv.Value
                let tail = items.Skip(iv.Key)
