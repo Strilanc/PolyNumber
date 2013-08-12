@@ -246,4 +246,42 @@ public class CollectionUtilTest {
 
         Tuple.Create(BigInteger.One * 2, BigInteger.One * 3).Product().AssertSimilar(6);
     }
+
+    [TestMethod]
+    public void TestDecreasingSequences() {
+        CollectionUtil.DecreasingSequencesOfSize(length: 3, total: 3, max: 2)
+            .AssertSequenceSimilar(
+                new[] { 2, 1, 0 },
+                new[] { 1, 1, 1 });
+     
+        CollectionUtil.DecreasingSequencesOfSize(length: 3, total: 4, max: 2)
+            .AssertSequenceSimilar(
+                new[] { 2, 2, 0 },
+                new[] { 2, 1, 1 });
+
+        CollectionUtil.DecreasingSequencesOfSize(length: 3, total: 5, max: 3)
+            .AssertSequenceSimilar(
+                new[] { 3, 2, 0 },
+                new[] { 3, 1, 1 },
+                new[] { 2, 2, 1 });
+
+        CollectionUtil.DecreasingSequencesOfSize(length: 3, total: 5, max: 2)
+            .Single().AssertSequenceSimilar(2, 2, 1);
+    }
+
+    [TestMethod]
+    public void TestPermutations() {
+        0.Range().Permutations().Single().AssertSequenceSimilar(0.Range());
+        1.Range().Permutations().Single().AssertSequenceSimilar(1.Range());
+        2.Range().Permutations().AssertSequenceSimilar(new[] { 0, 1 }, new[] { 1, 0 });
+        3.Range().Permutations().AssertSequenceSimilar(
+            new[] { 0, 1, 2 },
+            new[] { 0, 2, 1 },
+            new[] { 1, 0, 2 },
+            new[] { 1, 2, 0 },
+            new[] { 2, 0, 1 },
+            new[] { 2, 1, 0 });
+
+        6.Range().Permutations().Count().AssertEquals(6*5*4*3*2);
+    }
 }

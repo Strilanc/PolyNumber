@@ -12,6 +12,29 @@ public static class CollectionUtil {
         return new AnonymousReadOnlyList<T>(counter, getter, optionalEfficientIterator);
     }
 
+    public static IEnumerable<IReadOnlyList<int>> DecreasingSequencesOfSize(int length, int total, int max) {
+        return DecreasingSequencesOfSizeSummingToHelper(length, total, max);
+    }
+    private static IEnumerable<ImmutableList<int>> DecreasingSequencesOfSizeSummingToHelper(int size, int total, int max) {
+        if (size == 0 && total > 0) return new ImmutableList<int>[0];
+        if (size == 0 && total == 0) return new[] { ImmutableList.Create<int>() };
+        return from head in Math.Min(total, max).RangeInclusive().Reverse()
+               from tail in DecreasingSequencesOfSizeSummingToHelper(size - 1, total - head, head)
+               select tail.Insert(0, head);
+    }
+
+    public static IEnumerable<IReadOnlyList<T>> Permutations<T>(this IEnumerable<T> items) {
+        if (items == null) throw new ArgumentNullException("items");
+        return items.ToImmutableList().PermutationsHelper();
+    }
+    private static IEnumerable<ImmutableList<T>> PermutationsHelper<T>(this ImmutableList<T> items) {
+        if (items.Count == 0) return new[] {ImmutableList.Create<T>()};
+        return from i in items.Indexes().DistinctBy(i => items[i])
+               let head = items[i]
+               from tail in items.RemoveAt(i).PermutationsHelper()
+               select tail.Insert(0, head);
+    }
+
     /// <summary>
     /// Enumerates all of the ways that it's possible one item from each collection in a sequence.
     /// For example, the choice combinations of [[1,2],[3,4,5]] are (in some order): {[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]}.
@@ -67,6 +90,7 @@ public static class CollectionUtil {
         if (items == null) throw new ArgumentNullException("items");
         if (total < 0) throw new ArgumentOutOfRangeException("total", "total < 0");
         if (total == 0) return new[] { ImmutableList.Create<T>() };
+        if (maxRepeatCount == 0) return new ImmutableList<T>[0];
 
         return from iv in items.Index()
                let head = iv.Value

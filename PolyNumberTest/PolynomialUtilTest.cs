@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using MoreLinq;
 using Strilanc.LinqToCollections;
 
 static class NumUtil {
@@ -39,12 +41,14 @@ public class PolynomialUtilTest {
                     var expected = list1.Cross(list2).Choose(choiceCount).Select(e => e.ToArray()).ToArray();
                     d.AssertHasSimilarItemsIgnoringOrder(expected);
 
-                    var d2 = from choice1 in list1.Indexes().ChooseWithReplacement(choiceCount, list2.Count)
-                             let y = from item1 in choice1
-                                     group item1 by item1
-                                     into choiceCounted
+                    var d2 = from x3 in CollectionUtil.DecreasingSequencesOfSize(
+                                 length: list1.Count, 
+                                 total: choiceCount, 
+                                 max: list2.Count)
+                             from x4 in x3.Permutations()
+                             let y = from choiceCounted in x4.Index()
                                      let item1Value = list1[choiceCounted.Key]
-                                     let item1Count = choiceCounted.Count()
+                                     let item1Count = choiceCounted.Value
                                      let t1 = BigInteger.Pow(item1Value, item1Count)
                                      select from choice2 in list2.Choose(item1Count)
                                             let t2 = choice2.Product()
