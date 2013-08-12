@@ -4,13 +4,14 @@ using System.Numerics;
 using Strilanc.LinqToCollections;
 
 public static class PolynomialUtil {
-    public static IReadOnlyList<BigInteger> RootsToCoefficients(this IReadOnlyList<int> roots) {
+    public static IReadOnlyList<BigInteger> RootsToCoefficients(this IEnumerable<int> roots) {
         return roots.Select(e => (BigInteger)e).RootsToCoefficients();
     }
-    public static IReadOnlyList<BigInteger> RootsToCoefficients(this IReadOnlyList<BigInteger> roots) {
-        return roots.Count.UpTo()
-            .Select(i => 
-                roots.CombinationsOfSize(i)
+    public static IReadOnlyList<BigInteger> RootsToCoefficients(this IEnumerable<BigInteger> roots) {
+        var cached = roots.Select(e => -e).ToArray();
+        return cached.Length.UpTo()
+            .Select(i =>
+                cached.CombinationsOfSize(i)
                 .Select(f => f.Product())
                 .Sum())
             .ToArray();

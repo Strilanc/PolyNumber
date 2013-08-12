@@ -35,11 +35,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BigRationalLibrary">
+      <HintPath>..\packages\BigRationalLibrary.1.0.0.0\lib\NETFramework40\BigRationalLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="LinqToCollections">
       <HintPath>..\packages\Strilanc.LinqToCollections.1.0.1\lib\portable-net45+win8\LinqToCollections.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\packages\Microsoft.Bcl.Immutable.1.0.12-beta\lib\portable-net45+win8+wp8\System.Collections.Immutable.dll</HintPath>
+    </Reference>
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <Choose>

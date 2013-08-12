@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>BigRationalLibrary</id>
+    <version>1.0.0.0</version>
+    <title>BigRationalLibrary</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>http://bcl.codeplex.com/license</licenseUrl>
+    <projectUrl>http://bcl.codeplex.com/</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>BigRational builds on the BigInteger introduced in .NET Framework 4 to create an arbitrary-precision rational number type. This documentation contains reference documentation for the BigRational type.</description>
+    <summary>BigRational builds on the BigInteger introduced in .NET Framework 4 to create an arbitrary-precision rational number type. This documentation contains reference documentation for the BigRational type.</summary>
+    <releaseNotes />
+    <copyright />
+    <language />
+  </metadata>
+</package>
