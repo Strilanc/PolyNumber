@@ -28,6 +28,21 @@ public static class CollectionUtil {
                select tailChoice.Insert(0, head);
     }
 
+    public static IEnumerable<IReadOnlyList<T>> ChooseWithReplacement<T>(this IReadOnlyList<T> items, int total) {
+        return items.ChooseWithReplacementHelper(total);
+    }
+    private static IEnumerable<IImmutableList<T>> ChooseWithReplacementHelper<T>(this IReadOnlyList<T> items, int total) {
+        if (items == null) throw new ArgumentNullException("items");
+        if (total < 0) throw new ArgumentOutOfRangeException("total", "total < 0");
+        if (total == 0) return new[] { ImmutableList.Create<T>() };
+        return from iv in items.Index()
+               let head = iv.Value
+               let tail = items.Skip(iv.Key)
+               let tailChoices = tail.ChooseWithReplacementHelper(total - 1)
+               from tailChoice in tailChoices
+               select tailChoice.Insert(0, head);
+    }
+
     public static IEnumerable<T> Concat<T>(this IEnumerable<IEnumerable<T>> sequence) {
         return sequence.SelectMany(e => e);
     }

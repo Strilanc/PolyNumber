@@ -33,6 +33,46 @@ public class CollectionUtilTest {
     }
 
     [TestMethod]
+    public void TestChooseWithReplacement() {
+        0.Range().ChooseWithReplacement(0)
+         .AssertSequenceSimilar(new[] { 0.Range() });
+        0.Range().ChooseWithReplacement(1)
+         .AssertSequenceSimilar();
+
+        1.Range().ChooseWithReplacement(0)
+         .AssertSequenceSimilar(new[] { 0.Range() });
+        1.Range().ChooseWithReplacement(1)
+         .AssertSequenceSimilar(new[] { 1.Range() });
+        1.Range().ChooseWithReplacement(2)
+         .AssertSequenceSimilar(new[] {Enumerable.Repeat(0, 2) });
+
+        3.Range().ChooseWithReplacement(0)
+         .AssertSequenceSimilar(new[] { 0.Range() });
+        3.Range().ChooseWithReplacement(1)
+         .AssertSequenceSimilar(new[] { 0 }, new[] { 1 }, new[] { 2 });
+        3.Range().ChooseWithReplacement(2)
+         .AssertSequenceSimilar(
+            new[] { 0, 0 },
+            new[] { 0, 1 }, 
+            new[] { 0, 2 },
+            new[] { 1, 1 },
+            new[] { 1, 2 },
+            new[] { 2, 2 });
+        3.Range().ChooseWithReplacement(3)
+         .AssertSequenceSimilar(
+            new[] { 0, 0, 0 },
+            new[] { 0, 0, 1 },
+            new[] { 0, 0, 2 },
+            new[] { 0, 1, 1 },
+            new[] { 0, 1, 2 },
+            new[] { 0, 2, 2 },
+            new[] { 1, 1, 1 },
+            new[] { 1, 1, 2 },
+            new[] { 1, 2, 2 },
+            new[] { 2, 2, 2 });
+    }
+
+    [TestMethod]
     public void TestConcat() {
         Enumerable.Empty<int[]>()
             .Concat()

@@ -27,7 +27,10 @@ public static class TestingUtilities {
         var r1 = value1.ToArray();
         var r2 = value2.ToArray();
         if (!r1.SequenceEqual(r2)) {
-            Assert.Fail("{0} should be equal to {1}", string.Join(", ", r1), string.Join(", ", r2));
+            Assert.Fail(
+                "{0} should be equal to {1}",
+                value1.ToStringTryHarder(),
+                value2.ToStringTryHarder());
         }
     }
     public static void AssertSequenceEquals<T>(this IEnumerable<T> value1, params T[] value2) {
@@ -37,7 +40,10 @@ public static class TestingUtilities {
         value1.Count.AssertEquals(value2.Count);
         for (var i = 0; i < value1.Count; i++) {
             if (!Equals(value1[i], value2[i])) {
-                Assert.Fail("{0} should be equal to {1}", string.Join(", ", value1), string.Join(", ", value2));
+                Assert.Fail(
+                    "{0} should be equal to {1}", 
+                    value1.ToStringTryHarder(), 
+                    value2.ToStringTryHarder());
             }
         }
 
@@ -63,6 +69,22 @@ public static class TestingUtilities {
         value1.AssertListEquals((IReadOnlyList<T>)value2);
     }
 
+    public static string ToStringTryHarder(this object value) {
+        if (value == null) return "null";
+        
+        if (value is IEnumerable) {
+            return "{" + string.Join(", ", 
+                ((IEnumerable<object>)Enumerable.Cast<object>((dynamic)value))
+                .Select(ToStringTryHarder)) + "}";
+        }
+
+        if (value.GetType().IsGenericType && value.GetType().GetGenericTypeDefinition() == typeof(Tuple<,>)) {
+            var d = (dynamic)value;
+            return Tuple.Create(ToStringTryHarder(d.Item1), ToStringTryHarder(d.Item2)).ToString();
+        }
+
+        return "" + value;
+    }
     public static void AssertSequenceSimilar<T>(this IEnumerable<T> value1, params T[] value2) {
         AssertSequenceSimilar(value1, value2.AsEnumerable());
     }
@@ -72,9 +94,14 @@ public static class TestingUtilities {
                 while (true) {
                     var v1 = e1.MoveNext();
                     var v2 = e2.MoveNext();
+                    if (v1 != v2) {
+                        Assert.Fail("Expected {0} to be equal to {1}", value1.ToStringTryHarder(), value2.ToStringTryHarder());
+                    }
                     v1.AssertSimilar(v2);
                     if (!v1) break;
-                    e1.Current.AssertSimilar(e2.Current);
+                    if (!e1.Current.IsSimilarTo(e2.Current)) {
+                        Assert.Fail("Expected {0} to be equal to {1}", value1.ToStringTryHarder(), value2.ToStringTryHarder());
+                    }
                 }
             }
         }
@@ -87,7 +114,9 @@ public static class TestingUtilities {
             || (value1.GetType().GetInterfaces().Contains(typeof(IEnumerable)) && Enumerable.SequenceEqual((dynamic)value1, (dynamic)value2));        
     }
     public static void AssertSimilar<T>(this T value1, T value2) {
-        if (!value1.IsSimilarTo(value2)) Assert.AreEqual(value1, value2);
+        if (!value1.IsSimilarTo(value2)) {
+            Assert.Fail("Expected {0} to be equal to {1}", value1.ToStringTryHarder(), value2.ToStringTryHarder());
+        }
     }
     public static void AssertThrows(Action action) {
         try {
