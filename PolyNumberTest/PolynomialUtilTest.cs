@@ -44,6 +44,9 @@ public class PolynomialUtilTest {
                     var coefs2 = list2.Count.RangeInclusive()
                                       .Select(i => list2.Choose(i).Select(e => e.Product()).Sum())
                                       .ToArray();
+                    var coefs1 = list1.Count.RangeInclusive()
+                                      .Select(i => list1.Choose(i).Select(e => e.Product()).Sum())
+                                      .ToArray();
                     var L = CollectionUtil.DecreasingSequencesOfSize(length: list1.Count, total: choiceCount, max: list2.Count);
                     var d2 =
                         L
@@ -62,9 +65,39 @@ public class PolynomialUtilTest {
                                         ).Product()
                          select y.Sum()*f2
                         ).Sum();
+                    var z = from y in L
+                            select from x in y
+                                   group x by x
+                                   into g
+                                   let coef = g.Key
+                                   let repeat = g.Count()
+                                   where repeat > 0
+                                   select new {coef, repeat};
+                    var d4 =
+                        (from f in z
+                         let f2 = f.Select(e => BigInteger.Pow(coefs2[e.coef], e.repeat)).Product()
+                         let zz = f.SelectMany(e => Enumerable.Repeat(e.coef, e.repeat))
+                         let y = from p in zz.Permutations()
+                                 let q = p.SelectMany((e,i) => Enumerable.Repeat(i, e))
+                                 let qq = q.Select(i => list1[i])
+                                 select qq.Product()
+                         select y.Sum() * f2
+                        ).Sum();
+                    var d5 =
+                        (from f in z
+                         let f2 = f.Select(e => BigInteger.Pow(coefs2[e.coef], e.repeat)).Product()
+                         let zz = f.SelectMany(e => Enumerable.Repeat(e.coef, e.repeat))
+                         let y = from p in zz.Permutations()
+                                 let q = p.SelectMany((e, i) => Enumerable.Repeat(i, e))
+                                 let qq = q.Select(i => list1[i])
+                                 select qq.Product()
+                         select y.Sum() * f2
+                        ).Sum();
                     var r1 = expected.Select(e => e.Select(f => f.Product()).Product()).Sum();
                     r1.AssertEquals(d2);
                     r1.AssertEquals(d3);
+                    r1.AssertEquals(d4);
+                    r1.AssertEquals(d5);
                 }
             }
         }
