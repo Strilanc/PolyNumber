@@ -47,14 +47,13 @@ public class PolynomialUtilTest {
                                  max: list2.Count)
                              from x4 in x3.Permutations()
                              let y = from choiceCounted in x4.Index()
-                                     let item1Value = list1[choiceCounted.Key]
                                      let item1Count = choiceCounted.Value
+                                     where item1Count > 0
+                                     let item1Value = list1[choiceCounted.Key]
                                      let t1 = BigInteger.Pow(item1Value, item1Count)
                                      select from choice2 in list2.Choose(item1Count)
-                                            let t2 = choice2.Product()
-                                            select t2*t1
-                             from e in y.AllChoiceCombinations()
-                             select e.Product();
+                                            select choice2.Product()*t1
+                             select y.Select(e => e.Sum()).Product();
                     var r1 = expected.Select(e => e.Select(f => f.Product()).Product()).Sum();
                     var r2 = d2.Sum();
                     r1.AssertEquals(r2);
