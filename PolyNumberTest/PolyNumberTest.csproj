@@ -67,6 +67,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="IntegerPolynomialTest.cs" />
     <Compile Include="PolynomialUtilTest.cs" />
     <Compile Include="TestingUtilities.cs" />
     <Compile Include="CollectionUtilTest.cs" />

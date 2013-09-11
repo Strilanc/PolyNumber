@@ -111,12 +111,12 @@ public class PolynomialUtilTest {
             }
         }
     }
-    //public static PolyNumber RootTermsToCoefs(Dictionary<Term, BigInteger> terms, int degree) {
+    //public static PolyNumber RootTermsToCoefs(Dictionary<IPolynomialTerm, BigInteger> terms, int degree) {
     //    var worst = terms
     //        .MaxesBy(e => e.Key.Powers.Sum())
     //        .MaxBy(e => e.Value);
 
-    //    var roots = degree.Range().Select(e => new Term(degree, e));
+    //    var roots = degree.Range().Select(e => new IPolynomialTerm(degree, e));
     //    var coef = worst.Key.Powers.Sum();
 
     //    var coef = new 
@@ -165,7 +165,6 @@ public class PolynomialUtilTest {
         }
 
         var decs = d.Where(e => e > 0).ToArray();
-        //return roots.Choose(d.Count - zeroes).Select(e => e.Product()).Sum() * F2(decs, roots);
         return (from x in roots.Choose(d.Count - zeroes)
                 select F2(decs, x)
                 ).Sum();

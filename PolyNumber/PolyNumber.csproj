@@ -36,6 +36,9 @@
     <Reference Include="LinqToCollections">
       <HintPath>..\packages\Strilanc.LinqToCollections.1.0.1\lib\portable-net45+win8\LinqToCollections.dll</HintPath>
     </Reference>
+    <Reference Include="May">
+      <HintPath>..\..\..\Active\May\May\bin\Release\May.dll</HintPath>
+    </Reference>
     <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.2.0.0-alpha01\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
@@ -55,10 +58,14 @@
     <Compile Include="Exceptions\ArgumentNegativeException.cs" />
     <Compile Include="Exceptions\ArgumentNotPositiveException.cs" />
     <Compile Include="Exceptions\ArgumentZeroException.cs" />
+    <Compile Include="Polynomial\IntegerPolynomial.cs" />
+    <Compile Include="Polynomial\IPolynomialTerm.cs" />
+    <Compile Include="Polynomial\OneVariablePolynomialTerm.cs" />
     <Compile Include="PolyNumber.cs" />
     <Compile Include="PolynomialUtil.cs" />
     <Compile Include="CollectionUtil.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Polynomial\TwoVariablePolynomialTerm.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
