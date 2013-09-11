@@ -34,9 +34,6 @@ public static class CollectionUtil {
             }
         }
     }
-    private static IReadOnlyList<T> AnonymousList<T>(Func<int> counter, Func<int, T> getter, IEnumerable<T> optionalEfficientIterator = null) {
-        return new AnonymousReadOnlyList<T>(counter, getter, optionalEfficientIterator);
-    }
 
     public static IReadOnlyList<IReadOnlyList<T>> Transpose<T>(this IReadOnlyList<IReadOnlyList<T>> rectangularListOfLists) {
         if (rectangularListOfLists == null) throw new ArgumentNullException("rectangularListOfLists");
@@ -55,6 +52,18 @@ public static class CollectionUtil {
         if (size == 0 && total == 0) return new[] { ImmutableList.Create<int>() };
         return from head in total.Min(max).RangeInclusive().Reverse()
                from tail in DecreasingSequencesOfSizeSummingToHelper(size - 1, total - head, head)
+               select tail.Insert(0, head);
+    }
+
+    public static IEnumerable<IReadOnlyList<T>> Permutations<T>(this IEnumerable<T> items) {
+        if (items == null) throw new ArgumentNullException("items");
+        return items.ToImmutableList().PermutationsHelper();
+    }
+    private static IEnumerable<ImmutableList<T>> PermutationsHelper<T>(this ImmutableList<T> items) {
+        if (items.Count == 0) return new[] { ImmutableList.Create<T>() };
+        return from i in items.Indexes()
+               let head = items[i]
+               from tail in items.RemoveAt(i).DistinctPermutationsHelper()
                select tail.Insert(0, head);
     }
 
@@ -119,58 +128,63 @@ public static class CollectionUtil {
 
         return result;
     }
-    public static IEnumerable<IReadOnlyList<T>> Choose<T>(this IEnumerable<T> items, int size) {
-        return items.ToArray().ChooseHelper(size);
+
+    public static IEnumerable<IReadOnlyList<T>> Choose<T>(this IReadOnlyList<T> items, int numberOfItemsToChoose) {
+        return items.ChooseHelper(numberOfItemsToChoose);
     }
-    public static IEnumerable<IReadOnlyList<T>> Choose<T>(this IReadOnlyList<T> items, int size) {
-        return items.ChooseHelper(size);
-    }
-    private static IEnumerable<IImmutableList<T>> ChooseHelper<T>(this IReadOnlyList<T> items, int size) {
+    private static IEnumerable<IImmutableList<T>> ChooseHelper<T>(this IReadOnlyList<T> items, int numberOfItemsToChoose) {
         if (items == null) throw new ArgumentNullException("items");
-        if (size < 0) throw new ArgumentOutOfRangeException("size", "size < 0");
-        if (size == 0) return new[] { ImmutableList.Create<T>() };
-        if (size > items.Count) return new ImmutableList<T>[0];
+        if (numberOfItemsToChoose < 0) throw new ArgumentOutOfRangeException("numberOfItemsToChoose", "numberOfItemsToChoose < 0");
+        if (numberOfItemsToChoose == 0) return new[] { ImmutableList.Create<T>() };
+        if (numberOfItemsToChoose > items.Count) return new ImmutableList<T>[0];
         return from iv in items.Index()
                let head = iv.Value
                let tail = items.Skip(iv.Key + 1)
-               let tailChoices = tail.ChooseHelper(size - 1)
+               let tailChoices = tail.ChooseHelper(numberOfItemsToChoose - 1)
                from tailChoice in tailChoices
                select tailChoice.Insert(0, head);
     }
 
-    public static IEnumerable<IReadOnlyList<T>> ChooseWithReplacement<T>(this IReadOnlyList<T> items, int total, int maxRepeatCount) {
-        return items.ChooseWithReplacementHelper(total, maxRepeatCount, 0);
+    public static IEnumerable<IReadOnlyList<T>> ChooseWithReplacement<T>(this IReadOnlyList<T> items, int numberOfItemsToDraw) {
+        return items.ChooseWithReplacementHelper(numberOfItemsToDraw);
     }
-    private static IEnumerable<IImmutableList<T>> ChooseWithReplacementHelper<T>(this IReadOnlyList<T> items, int total, int maxRepeatCount, int curRepeatCount) {
+    private static IEnumerable<IImmutableList<T>> ChooseWithReplacementHelper<T>(this IReadOnlyList<T> items, int numberOfItemsToDraw) {
         if (items == null) throw new ArgumentNullException("items");
-        if (total < 0) throw new ArgumentOutOfRangeException("total", "total < 0");
-        if (total == 0) return new[] { ImmutableList.Create<T>() };
-        if (maxRepeatCount == 0) return new ImmutableList<T>[0];
+        if (numberOfItemsToDraw < 0) throw new ArgumentOutOfRangeException("numberOfItemsToDraw", "numberOfItemsToDraw < 0");
+        if (numberOfItemsToDraw == 0) return new[] { ImmutableList.Create<T>() };
 
         return from iv in items.Index()
                let head = iv.Value
-               where iv.Key > 0 || curRepeatCount < maxRepeatCount
                let tail = items.Skip(iv.Key)
-               let tailChoices = tail.ChooseWithReplacementHelper(
-                    total - 1, 
-                    maxRepeatCount,
-                    iv.Key == 0 ? curRepeatCount + 1 : 1)
+               let tailChoices = tail.ChooseWithReplacementHelper(numberOfItemsToDraw - 1)
                from tailChoice in tailChoices
                select tailChoice.Insert(0, head);
     }
 
-    public static IEnumerable<IReadOnlyList<T>> ChooseWithReplacement<T>(this IReadOnlyList<T> items, int total) {
-        return items.ChooseWithReplacementHelper(total);
-    }
-    private static IEnumerable<IImmutableList<T>> ChooseWithReplacementHelper<T>(this IReadOnlyList<T> items, int total) {
+    public static IEnumerable<IReadOnlyList<T>> ChooseWithBoundedRepetition<T>(this IReadOnlyList<T> items,
+                                                                               int numberOfItemsToDraw,
+                                                                               int maxRepeatsOfEachItem) {
         if (items == null) throw new ArgumentNullException("items");
-        if (total < 0) throw new ArgumentOutOfRangeException("total", "total < 0");
-        if (total == 0) return new[] { ImmutableList.Create<T>() };
+        if (numberOfItemsToDraw < 0) throw new ArgumentOutOfRangeException("numberOfItemsToDraw", "numberOfItemsToDraw < 0");
+        if (maxRepeatsOfEachItem < 0) throw new ArgumentOutOfRangeException("maxRepeatsOfEachItem", "maxRepeatsOfEachItem < 0");
+        return items.ChooseWithBoundedRepetitionHelper(numberOfItemsToDraw, maxRepeatsOfEachItem, 0);
+    }
+    private static IEnumerable<IImmutableList<T>> ChooseWithBoundedRepetitionHelper<T>(this IReadOnlyList<T> items,
+                                                                                       int numberOfItemsToDraw,
+                                                                                       int maxRepeatsOfEachItem,
+                                                                                       int repeatsOfFirstItemSoFar) {
+        if (numberOfItemsToDraw == 0) return new[] {ImmutableList.Create<T>()};
+        if (maxRepeatsOfEachItem == 0) return new ImmutableList<T>[0];
 
         return from iv in items.Index()
+               let index = iv.Key
                let head = iv.Value
-               let tail = items.Skip(iv.Key)
-               let tailChoices = tail.ChooseWithReplacementHelper(total - 1)
+               where index > 0 || repeatsOfFirstItemSoFar < maxRepeatsOfEachItem
+               let tail = items.Skip(index)
+               let tailChoices = tail.ChooseWithBoundedRepetitionHelper(
+                   numberOfItemsToDraw - 1,
+                   maxRepeatsOfEachItem,
+                   1 + (index == 0 ? repeatsOfFirstItemSoFar : 0))
                from tailChoice in tailChoices
                select tailChoice.Insert(0, head);
     }
@@ -188,7 +202,7 @@ public static class CollectionUtil {
     public static IReadOnlyList<Tuple<T, T>> Cross<T>(this IReadOnlyList<T> list1, IReadOnlyList<T> list2) {
         if (list1 == null) throw new ArgumentNullException("list1");
         if (list2 == null) throw new ArgumentNullException("list2");
-        return AnonymousList(
+        return new AnonymousReadOnlyList<Tuple<T, T>>(
             () => list1.Count * list2.Count,
             i => {
                 var n = list2.Count;

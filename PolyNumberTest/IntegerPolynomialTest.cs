@@ -96,7 +96,7 @@ public class IntegerPolynomialTest {
     }
 
     [TestMethod]
-    public void PerturbedDividesTest() {
+    public void DividesTest_ExhaustiveSmall() {
         var roots = 3.Range().SelectMany(i => Enumerable.Repeat(Enumerable.Range(-4, 9).Select(e => (BigInteger)e), i).AllChoiceCombinations());
         foreach (var den in roots) {
             foreach (var num in roots) {
@@ -134,7 +134,7 @@ public class IntegerPolynomialTest {
     }
 
     [TestMethod]
-    public void PerturbedRootMultiplicationTest2() {
+    public void PerturbedRootMultiplicationTest_LowDegree() {
         var rng = new Random(23571113);
         foreach (var repeat in 2000.Range()) {
             var rootCount1 = rng.Next(3);
