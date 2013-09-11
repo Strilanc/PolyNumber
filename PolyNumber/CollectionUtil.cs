@@ -12,6 +12,12 @@ public static class CollectionUtil {
     public static IEnumerable<BigInteger> Range(this BigInteger count) {
         return Naturals.Take(count);
     }
+    public static T Max<T>(this T value1, T value2) where T : IComparable<T> {
+        return value1.CompareTo(value2) >= 0 ? value1 : value2;
+    }
+    public static T Min<T>(this T value1, T value2) where T : IComparable<T> {
+        return value1.CompareTo(value2) <= 0 ? value1 : value2;
+    }
     public static IEnumerable<T> Take<T>(this IEnumerable<T> sequence, BigInteger count) {
         if (sequence == null) throw new ArgumentNullException("sequence");
         if (count <= 0) yield break;
@@ -47,7 +53,7 @@ public static class CollectionUtil {
     private static IEnumerable<ImmutableList<int>> DecreasingSequencesOfSizeSummingToHelper(int size, int total, int max) {
         if (size == 0 && total > 0) return new ImmutableList<int>[0];
         if (size == 0 && total == 0) return new[] { ImmutableList.Create<int>() };
-        return from head in Math.Min(total, max).RangeInclusive().Reverse()
+        return from head in total.Min(max).RangeInclusive().Reverse()
                from tail in DecreasingSequencesOfSizeSummingToHelper(size - 1, total - head, head)
                select tail.Insert(0, head);
     }

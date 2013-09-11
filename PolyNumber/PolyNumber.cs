@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Numerics;
 using Numerics;
+using Math;
 using Strilanc.LinqToCollections;
 
 public struct PolyNumber {
@@ -21,14 +22,23 @@ public struct PolyNumber {
         return Coefficients[index];
     }
 
-    public int Degree { get { return Math.Max(0, Coefficients.Length - 1); }
+    public int Degree { get { return 0.Max(Coefficients.Length - 1); }
     }
 
     public static PolyNumber FromCoefficients(IEnumerable<BigInteger> coefficients) {
         return new PolyNumber(coefficients);
     }
+    private static IReadOnlyList<BigInteger> RootsToCoefficients(IEnumerable<BigInteger> roots) {
+        var cached = roots.Select(e => -e).ToArray();
+        return cached.Length.RangeInclusive()
+                     .Select(i =>
+                             cached.Choose(i)
+                                   .Select(f => f.Product())
+                                   .Sum())
+                     .ToArray();
+    }
     public static PolyNumber FromRoots(params BigInteger[] roots) {
-        return FromCoefficients(roots.Distinct().RootsToCoefficients());
+        return FromCoefficients(RootsToCoefficients(roots.Distinct()));
     }
     public static PolyNumber FromValue(BigInteger value) {
         return FromRoots(new[] { value });

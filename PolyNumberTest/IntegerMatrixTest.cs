@@ -4,7 +4,7 @@
 public class IntegerMatrixTest {
     [TestMethod]
     public void ReduceTest1() {
-        var m = IntegerMatrix.FromRows(
+        var m = IntMatrix.FromRows(
             new[] { 4, 6 });
 
         var r = m.Reduced();
@@ -15,7 +15,7 @@ public class IntegerMatrixTest {
 
     [TestMethod]
     public void ReduceTest2() {
-        var m = IntegerMatrix.FromRows(
+        var m = IntMatrix.FromRows(
             new[] { -4, 6 });
 
         var r = m.Reduced();
@@ -26,7 +26,7 @@ public class IntegerMatrixTest {
 
     [TestMethod]
     public void ReduceTest3() {
-        var m = IntegerMatrix.FromRows(
+        var m = IntMatrix.FromRows(
             new[] {1, 0, -2, 0, -14},
             new[] {0, 0, -3, 0, -15},
             new[] {0, 0, 0, 6, 0},
