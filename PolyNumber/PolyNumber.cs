@@ -27,9 +27,6 @@ public struct PolyNumber {
     public static PolyNumber FromCoefficients(IEnumerable<BigInteger> coefficients) {
         return new PolyNumber(coefficients);
     }
-    public static PolyNumber FromRoots(IEnumerable<BigInteger> roots) {
-        return FromCoefficients(roots.Distinct().RootsToCoefficients());
-    }
     public static PolyNumber FromRoots(params BigInteger[] roots) {
         return FromCoefficients(roots.Distinct().RootsToCoefficients());
     }

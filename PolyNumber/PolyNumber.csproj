@@ -55,12 +55,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IntegerMatrix.cs" />
     <Compile Include="Exceptions\ArgumentNegativeException.cs" />
     <Compile Include="Exceptions\ArgumentNotPositiveException.cs" />
     <Compile Include="Exceptions\ArgumentZeroException.cs" />
     <Compile Include="Polynomial\IntegerPolynomial.cs" />
     <Compile Include="Polynomial\IPolynomialTerm.cs" />
     <Compile Include="Polynomial\OneVariablePolynomialTerm.cs" />
+    <Compile Include="Polynomial\Polynomial.cs" />
     <Compile Include="PolyNumber.cs" />
     <Compile Include="PolynomialUtil.cs" />
     <Compile Include="CollectionUtil.cs" />

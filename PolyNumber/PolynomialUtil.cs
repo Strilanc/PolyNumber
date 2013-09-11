@@ -7,9 +7,6 @@ using Strilanc.Value;
 using MoreLinq;
 
 public static class PolynomialUtil {
-    public static IReadOnlyList<BigInteger> RootsToCoefficients(this IEnumerable<int> roots) {
-        return roots.Select(e => (BigInteger)e).RootsToCoefficients();
-    }
     public static IReadOnlyList<BigInteger> RootsToCoefficients(this IEnumerable<BigInteger> roots) {
         var cached = roots.Select(e => -e).ToArray();
         return cached.Length.RangeInclusive()
@@ -19,70 +16,61 @@ public static class PolynomialUtil {
                 .Sum())
             .ToArray();
     }
+
+    public static IEnumerable<IntegerPolynomial<OneVariablePolynomialTerm>> RewritePolyBasisUsing(OneVariablePolynomialTerm termToRewrite,
+                                                                                                  IntegerPolynomial<OneVariablePolynomialTerm> rewrittenTerm) {
+
+        var X = new OneVariablePolynomialTerm(1);
+        var r = rewrittenTerm - termToRewrite;
+
+        var cur = (IntegerPolynomial<OneVariablePolynomialTerm>)1;
+        yield return cur;
+
+        for (var i = 1; i < termToRewrite.Power; i++) {
+            cur *= X;
+            yield return cur;
+        }
+        while (true) {
+            cur = cur*X;
+            var factor = cur.Coefficient(termToRewrite);
+            cur += r*factor;
+            yield return cur;
+        }
+    }
+    public static IEnumerable<IntegerPolynomial<OneVariablePolynomialTerm>> RewritePolyBasisUsing(IntegerPolynomial<OneVariablePolynomialTerm> poly) {
+        var termToRewrite = poly.Coefficients.MaxBy(e => e.Key.Power);
+        if (termToRewrite.Value != 1) throw new NotImplementedException();
+        var rewrittenTerm = termToRewrite - poly;
+        return RewritePolyBasisUsing(termToRewrite.Key, rewrittenTerm);
+    }
+
     public static IntegerPolynomial<OneVariablePolynomialTerm> M(IntegerPolynomial<OneVariablePolynomialTerm> poly1, IntegerPolynomial<OneVariablePolynomialTerm> poly2) {
-        if (poly1 == 0 || poly2 == 0) return 0;
+        var deg1 = poly1.Degree();
+        var deg2 = poly2.Degree();
+        
+        var maxDegreeOfResult = deg1 * deg2;
+        if (maxDegreeOfResult == 0) return 1;
 
-        var m1 = poly1.Coefficients.MaxBy(e => e.Key.Power);
-        var em1 = m1 - poly1;
+        var rewrittenPowers1 = RewritePolyBasisUsing(poly1).Select(p => p.ToPolynomialOverVariable1Of2());
+        var rewrittenPowers2 = RewritePolyBasisUsing(poly2).Select(p => p.ToPolynomialOverVariable2Of2());
+        var rewrittenPowerPairs = 
+            rewrittenPowers1.Zip(rewrittenPowers2,
+                IntegerPolynomial<TwoVariablePolynomialTerm>.Multiply)
+            .Take(maxDegreeOfResult + 1);
 
-        var m2 = poly2.Coefficients.MaxBy(e => e.Key.Power);
-        var em2 = m2 - poly2;
+        var linearSystem = IntegerMatrix.FromColumns(
+            from col in rewrittenPowerPairs
+            select from row in maxDegreeOfResult.Range()
+                   let exponentForX = row/deg2
+                   let exponentForY = row%deg2
+                   select col.Coefficient(new TwoVariablePolynomialTerm(exponentForX, exponentForY)));
 
+        var solvedSystem = linearSystem.Reduced();
 
+        var degreeOfSolution = solvedSystem.Rows.Count(row => row.Any(cell => cell != 0));
 
+        var lowCoefficients = solvedSystem.Columns[degreeOfSolution].Take(degreeOfSolution);
 
-        //x^|poly1| = -(poly1 dot POLY)
-        //x^|coefs2| = -(coefs2 dot POLY)
-        throw new Exception();
-    }
-
-    public static May<TVal> MayGetValue<TKey, TVal>(this IReadOnlyDictionary<TKey, TVal> dictionary, TKey key) {
-        TVal val;
-        if (!dictionary.TryGetValue(key, out val)) return May.NoValue;
-        return val;
-    }
-    public static Dictionary<TKey, TVal> ToDictionary<TKey, TVal>(this IEnumerable<KeyValuePair<TKey, TVal>> sequence) {
-        if (sequence == null) throw new ArgumentNullException("sequence");
-        return sequence.ToDictionary(e => e.Key, e => e.Value);
-    }
-    public static KeyValuePair<TKey, TVal> KeyVal<TKey, TVal>(this TKey key, TVal val) {
-        return new KeyValuePair<TKey, TVal>(key, val);
-    }
-    public static IEnumerable<KeyValuePair<TKey, TVal>> KeyReduce<TKey, TVal>(this IEnumerable<KeyValuePair<TKey, TVal>> sequence, Func<TVal, TVal, TVal> duplicateKeyValueReducer) {
-        if (sequence == null) throw new ArgumentNullException("sequence");
-        if (duplicateKeyValueReducer == null) throw new ArgumentNullException("duplicateKeyValueReducer");
-        return sequence
-            .GroupBy(e => e.Key)
-            .SelectKeyValue(
-                g => g.Key,
-                g => g.Select(e => e.Value).Aggregate(duplicateKeyValueReducer));
-    }
-    public static Dictionary<TKey, TVal> ToDictionary<TKey, TVal>(this IEnumerable<KeyValuePair<TKey, TVal>> sequence, Func<TVal, TVal, TVal> duplicateKeyValueReducer) {
-        if (sequence == null) throw new ArgumentNullException("sequence");
-        if (duplicateKeyValueReducer == null) throw new ArgumentNullException("duplicateKeyValueReducer");
-        return sequence
-            .GroupBy(e => e.Key)
-            .ToDictionary(
-                g => g.Key, 
-                g => g.Select(e => e.Value).Aggregate(duplicateKeyValueReducer));
-    }
-    public static bool Contains<TKey, TVal>(this IReadOnlyDictionary<TKey, TVal> dictionary, KeyValuePair<TKey, TVal> keyValuePair) {
-        if (dictionary == null) throw new ArgumentNullException("dictionary");
-        return dictionary.MayGetValue(keyValuePair.Key) == keyValuePair.Value.Maybe();
-    }
-    public static IEnumerable<KeyValuePair<TKey, TVal>> SelectValue<TKey, TVal>(this IEnumerable<TKey> keys, Func<TKey, TVal> valueSelector) {
-        return keys.Select(e => e.KeyVal(valueSelector(e)));
-    }
-    public static IEnumerable<KeyValuePair<TKey, TVal>> SelectKeyValue<TItem, TKey, TVal>(this IEnumerable<TItem> sequence, Func<TItem, TKey> keySelector, Func<TItem, TVal> valueSelector) {
-        if (sequence == null) throw new ArgumentNullException("sequence");
-        if (keySelector == null) throw new ArgumentNullException("keySelector");
-        if (valueSelector == null) throw new ArgumentNullException("valueSelector");
-        return sequence.Select(e => keySelector(e).KeyVal(valueSelector(e)));
-    }
-    public static bool DictionaryEqual<TKey, TVal>(this IReadOnlyDictionary<TKey, TVal> dictionary1, IReadOnlyDictionary<TKey, TVal> dictionary2) {
-        if (dictionary1 == null) throw new ArgumentNullException("dictionary1");
-        if (dictionary2 == null) throw new ArgumentNullException("dictionary2");
-        return dictionary1.Count == dictionary2.Count
-               && dictionary1.All(dictionary2.Contains);
+        return Polynomial.XToThe(degreeOfSolution) - lowCoefficients.TimesPolynomialBasis();
     }
 }

@@ -201,24 +201,6 @@ public class CollectionUtilTest {
     }
 
     [TestMethod]
-    public void TestWindowList() {
-        0.Range().Window(1).AssertListSimilar();
-        0.Range().Window(2).AssertListSimilar();
-
-        1.Range().Window(1).AssertListSimilar(new[] { 1.Range() });
-        1.Range().Window(2).AssertListSimilar();
-
-        2.Range().Window(1).AssertListSimilar(new[] { 0 }, new[] { 1 });
-        2.Range().Window(2).AssertListSimilar(new[] { 2.Range() });
-        2.Range().Window(3).AssertListSimilar();
-
-        3.Range().Window(1).AssertListSimilar(new[] { 0 }, new[] { 1 }, new[] { 2 });
-        3.Range().Window(2).AssertListSimilar(new[] { 0, 1 }, new[] { 1, 2 });
-        3.Range().Window(3).AssertListSimilar(new[] { 3.Range() });
-        3.Range().Window(4).AssertListSimilar();
-    }
-
-    [TestMethod]
     public void TestWindowEnumerable() {
         0.Range().AsEnumerable().Window(1).AssertSequenceSimilar();
         0.Range().AsEnumerable().Window(2).AssertSequenceSimilar();

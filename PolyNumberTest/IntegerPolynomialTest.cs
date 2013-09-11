@@ -1,45 +1,38 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using Strilanc.LinqToCollections;
+using Strilanc.Value;
 
 [TestClass]
 public class IntegerPolynomialTest {
-    public static IntegerPolynomial<OneVariablePolynomialTerm> Poly(params BigInteger[] coefs) {
-        return new IntegerPolynomial<OneVariablePolynomialTerm>(coefs.Reverse().Select((e, i) => new OneVariablePolynomialTerm(i).KeyVal(e)));
-    }
-    public static IntegerPolynomial<TwoVariablePolynomialTerm> Poly1(params BigInteger[] coefs) {
-        return new IntegerPolynomial<TwoVariablePolynomialTerm>(coefs.Reverse().Select((e, i) => new TwoVariablePolynomialTerm(i, 0).KeyVal(e)));
-    }
-    public static IntegerPolynomial<TwoVariablePolynomialTerm> Poly2(params BigInteger[] coefs) {
-        return new IntegerPolynomial<TwoVariablePolynomialTerm>(coefs.Reverse().Select((e, i) => new TwoVariablePolynomialTerm(0, i).KeyVal(e)));
-    }
-
     [TestMethod]
     public void AdditionTest() {
-        var p1 = Poly(1, 2, 3);
-        var p2 = Poly(2, 3, 5, 7);
-        (p1 + p2).AssertEquals(Poly(2, 4, 7, 10));
+        var p1 = Polynomial.FromBigEndianCoefficients(1, 2, 3);
+        var p2 = Polynomial.FromBigEndianCoefficients(2, 3, 5, 7);
+        (p1 + p2).AssertEquals(Polynomial.FromBigEndianCoefficients(2, 4, 7, 10));
     }
     [TestMethod]
     public void MultiplicationTest() {
-        var p1 = Poly(1, 2);
-        var p2 = Poly(2, 3, 5);
-        (p1 * p2).AssertEquals(Poly(2, 7, 11, 10));
+        var p1 = Polynomial.FromBigEndianCoefficients(1, 2);
+        var p2 = Polynomial.FromBigEndianCoefficients(2, 3, 5);
+        (p1 * p2).AssertEquals(Polynomial.FromBigEndianCoefficients(2, 7, 11, 10));
     }
     [TestMethod]
     public void RaisedToTest() {
-        Poly(1).RaisedTo(10000000).AssertEquals(Poly(1));
-        Poly(1, 0).RaisedTo(10000000).AssertSimilar(new OneVariablePolynomialTerm(10000000).KeyVal(BigInteger.One));
-        Poly(2, 0).RaisedTo(50).AssertSimilar(new OneVariablePolynomialTerm(50).KeyVal(BigInteger.Pow(2, 50)));
-        Poly(1, 1).RaisedTo(5).AssertSimilar(Poly(1, 5, 10, 10, 5, 1));
+        Polynomial.FromBigEndianCoefficients(1).RaisedTo(10000000).AssertEquals(Polynomial.FromBigEndianCoefficients(1));
+        Polynomial.FromBigEndianCoefficients(1, 0).RaisedTo(10000000).AssertSimilar(new OneVariablePolynomialTerm(10000000).KeyVal(BigInteger.One));
+        Polynomial.FromBigEndianCoefficients(2, 0).RaisedTo(50).AssertSimilar(new OneVariablePolynomialTerm(50).KeyVal(BigInteger.Pow(2, 50)));
+        Polynomial.FromBigEndianCoefficients(1, 1).RaisedTo(5).AssertSimilar(Polynomial.FromBigEndianCoefficients(1, 5, 10, 10, 5, 1));
 
-        Poly2(1, 0).RaisedTo(10000000).AssertSimilar(new TwoVariablePolynomialTerm(0, 10000000).KeyVal(BigInteger.One));
+        Polynomial.FromBigEndianCoefficientsOverVar2Of2(1, 0).RaisedTo(10000000).AssertSimilar(new TwoVariablePolynomialTerm(0, 10000000).KeyVal(BigInteger.One));
     }
     [TestMethod]
     public void MultiplicationTest2() {
-        var p1 = Poly1(1, 2);
-        var p2 = Poly2(2, 3, 5);
+        var p1 = Polynomial.FromBigEndianCoefficientsOverVar1Of2(1, 2);
+        var p2 = Polynomial.FromBigEndianCoefficientsOverVar2Of2(2, 3, 5);
         (p1 * p2).AssertEquals(new IntegerPolynomial<TwoVariablePolynomialTerm>(new Dictionary<TwoVariablePolynomialTerm, BigInteger> {
             {new TwoVariablePolynomialTerm(0, 0), 10},
             {new TwoVariablePolynomialTerm(0, 1), 6},
@@ -48,5 +41,100 @@ public class IntegerPolynomialTest {
             {new TwoVariablePolynomialTerm(1, 1), 3},
             {new TwoVariablePolynomialTerm(1, 2), 2}
         }));
+    }
+    [TestMethod]
+    public void RootMultiplicationTest() {
+        var p1 = PolynomialUtil.M(Polynomial.FromBigEndianCoefficients(1, 0, -1), Polynomial.FromBigEndianCoefficients(1, 3, 2));
+        p1.AssertEquals(Polynomial.FromBigEndianCoefficients(1, 0, -5, 0, 4));
+
+        var x1 = Polynomial.FromRoots(7, 11, 13);
+        var x2 = Polynomial.FromRoots(2, 3, 5);
+        var x3 = Polynomial.FromRoots(2 * 7, 2 * 11, 2 * 13, 3 * 7, 3 * 11, 3 * 13, 5 * 7, 5 * 11, 5 * 13);
+        PolynomialUtil.M(x1, x2).AssertEquals(x3);
+    }
+    [TestMethod]
+    public void RootMultiplicationTest2() {
+        var roots1 = new BigInteger[] {1, -1};
+        var roots2 = new BigInteger[] {1, -1};
+        var x1 = Polynomial.FromRoots(roots1);
+        var x2 = Polynomial.FromRoots(roots2);
+        var x3 = Polynomial.FromRoots(roots1.Cross(roots2).Select(e => e.Item1 * e.Item2).Distinct());
+        var x3b = PolynomialUtil.M(x1, x2);
+        x3b.AssertEquals(x3);
+    }
+
+    [TestMethod]
+    public void DividesTest() {
+        Polynomial.FromBigEndianCoefficients(1, 1).DividesScaled(Polynomial.FromBigEndianCoefficients(1, 0, -1)).AssertTrue();
+        Polynomial.FromBigEndianCoefficients(1, -1).DividesScaled(Polynomial.FromBigEndianCoefficients(1, 0, -1)).AssertTrue();
+        Polynomial.FromRoots(2, 3).DividesScaled(Polynomial.FromRoots(2, 3)).AssertTrue();
+        Polynomial.FromRoots(2, 3).DividesScaled(Polynomial.FromRoots(2, 3, 5)).AssertTrue();
+        Polynomial.FromRoots(2, 3).DividesScaled(Polynomial.FromRoots(2, 3, 6)).AssertTrue();
+        
+        Polynomial.FromRoots(2, 3).DividesScaled(Polynomial.FromRoots(2, 6)).AssertFalse();
+        Polynomial.FromRoots(1).DividesScaled(Polynomial.FromRoots(2)).AssertFalse();
+        Polynomial.FromRoots(1).DividesScaled(Polynomial.FromRoots(0)).AssertFalse();
+        
+        Polynomial.FromRoots(0).DividesScaled(Polynomial.FromRoots(0, 2)).AssertTrue();
+    }
+
+    [TestMethod]
+    public void PerturbedDividesTest() {
+        var roots = 3.Range().SelectMany(i => Enumerable.Repeat(Enumerable.Range(-4, 9).Select(e => (BigInteger)e), i).AllChoiceCombinations());
+        foreach (var den in roots) {
+            foreach (var num in roots) {
+                var actual = Polynomial.FromRoots(den).DividesScaled(Polynomial.FromRoots(num));
+                
+                var den2 = den.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
+                var num2 = num.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
+                var canDivide = den2.All(e => num2.MayGetValue(e.Key).ElseDefault() >= e.Value);
+                    
+                actual.AssertEquals(canDivide);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void PerturbedRootMultiplicationTest() {
+        var rng = new Random(2357);
+        foreach (var repeat in 1000.Range()) {
+            var rootCount1 = rng.Next(6);
+            var rootCount2 = rng.Next(6);
+
+            var roots1 = rootCount1.Range().Select(e => (BigInteger)rng.Next(-50, 50)).ToArray();
+            var roots2 = rootCount2.Range().Select(e => (BigInteger)rng.Next(-50, 50)).ToArray();
+
+            var roots3Max = roots1.Cross(roots2).Select(e => e.Item1 * e.Item2).ToArray();
+            var roots3Min = roots1.Cross(roots2).Select(e => e.Item1 * e.Item2).Distinct().ToArray();
+
+            var poly1 = Polynomial.FromRoots(roots1);
+            var poly2 = Polynomial.FromRoots(roots2);
+            var actualPoly3 = PolynomialUtil.M(poly1, poly2);
+
+            actualPoly3.DividesScaled(Polynomial.FromRoots(roots3Max)).AssertTrue();
+            Polynomial.FromRoots(roots3Min).DividesScaled(actualPoly3).AssertTrue();
+        }
+    }
+
+    [TestMethod]
+    public void PerturbedRootMultiplicationTest2() {
+        var rng = new Random(23571113);
+        foreach (var repeat in 5000.Range()) {
+            var rootCount1 = rng.Next(3);
+            var rootCount2 = rng.Next(3);
+
+            var roots1 = rootCount1.Range().Select(e => (BigInteger)rng.Next(-50, 50)).ToArray();
+            var roots2 = rootCount2.Range().Select(e => (BigInteger)rng.Next(-50, 50)).ToArray();
+
+            var roots3Max = roots1.Cross(roots2).Select(e => e.Item1 * e.Item2).ToArray();
+            var roots3Min = roots1.Cross(roots2).Select(e => e.Item1 * e.Item2).Distinct().ToArray();
+
+            var poly1 = Polynomial.FromRoots(roots1);
+            var poly2 = Polynomial.FromRoots(roots2);
+            var actualPoly3 = PolynomialUtil.M(poly1, poly2);
+
+            actualPoly3.DividesScaled(Polynomial.FromRoots(roots3Max)).AssertTrue();
+            Polynomial.FromRoots(roots3Min).DividesScaled(actualPoly3).AssertTrue();
+        }
     }
 }

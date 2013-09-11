@@ -22,6 +22,9 @@ public struct OneVariablePolynomialTerm : IPolynomialTerm<OneVariablePolynomialT
         if (power == 3) return var + "³";
         return var + "^" + power;
     }
+    public static IntegerPolynomial<OneVariablePolynomialTerm> operator *(OneVariablePolynomialTerm term, BigInteger factor) {
+        return term.KeyVal(factor);
+    } 
     public int CompareTo(OneVariablePolynomialTerm other) {
         return Power.CompareTo(other.Power);
     }

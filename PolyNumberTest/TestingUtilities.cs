@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -81,9 +82,11 @@ public static class TestingUtilities {
     public static bool IsGenericTypeCreatedFromDefinition(this Type type, Type typeDefinition) {
         return type.IsGenericType && type.GetGenericTypeDefinition() == typeDefinition;
     }
+    [DebuggerStepThrough]
     public static void AssertTrue(this bool value) {
         Assert.IsTrue(value);
     }
+    [DebuggerStepThrough]
     public static void AssertFalse(this bool value) {
         Assert.IsFalse(value);
     }
@@ -96,8 +99,9 @@ public static class TestingUtilities {
             return default(T);
         }
     }
-    public static void AssertEquals<T1, T2>(this T1 value1, T2 value2) {
-        Assert.AreEqual(value1, value2);
+    [DebuggerStepThrough]
+    public static void AssertEquals<T1, T2>(this T1 actual, T2 expected) {
+        Assert.AreEqual(expected, actual);
     }
     public static void AssertSequenceEquals<T>(this IEnumerable<T> value1, IEnumerable<T> value2) {
         var r1 = value1.ToArray();

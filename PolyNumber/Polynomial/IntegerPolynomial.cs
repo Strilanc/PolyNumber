@@ -24,6 +24,13 @@ public struct IntegerPolynomial<TTerm> : IEquatable<IntegerPolynomial<TTerm>> wh
                 .ToDictionary();
     }
 
+    public static IntegerPolynomial<TTerm> Add(IntegerPolynomial<TTerm> value1, IntegerPolynomial<TTerm> value2) {
+        return value1 + value2;
+    }
+    public static IntegerPolynomial<TTerm> Multiply(IntegerPolynomial<TTerm> value1, IntegerPolynomial<TTerm> value2) {
+        return value1 * value2;
+    }
+
     public static implicit operator IntegerPolynomial<TTerm>(int value) {
         return (BigInteger)value;
     }
@@ -38,12 +45,12 @@ public struct IntegerPolynomial<TTerm> : IEquatable<IntegerPolynomial<TTerm>> wh
     }
     public static IntegerPolynomial<TTerm> operator +(IntegerPolynomial<TTerm> value1, IntegerPolynomial<TTerm> value2) {
         var keys = value1.Coefficients.Keys.Union(value2.Coefficients.Keys);
-        var keyVals = keys.SelectValue(e => value1.Coefficient(e) + value2.Coefficient(e));
+        var keyVals = keys.SelectKeyValue(e => value1.Coefficient(e) + value2.Coefficient(e));
         return new IntegerPolynomial<TTerm>(keyVals);
     }
     public static IntegerPolynomial<TTerm> operator -(IntegerPolynomial<TTerm> value1, IntegerPolynomial<TTerm> value2) {
         var keys = value1.Coefficients.Keys.Union(value2.Coefficients.Keys);
-        var keyVals = keys.SelectValue(e => value1.Coefficient(e) - value2.Coefficient(e));
+        var keyVals = keys.SelectKeyValue(e => value1.Coefficient(e) - value2.Coefficient(e));
         return new IntegerPolynomial<TTerm>(keyVals);
     }
     public static IntegerPolynomial<TTerm> operator -(IntegerPolynomial<TTerm> value) {
