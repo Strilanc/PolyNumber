@@ -23,15 +23,15 @@ public static class CollectionUtil {
                select tail.Insert(0, head);
     }
 
-    public static IEnumerable<IReadOnlyList<T>> Permutations<T>(this IEnumerable<T> items) {
+    public static IEnumerable<IReadOnlyList<T>> DistinctPermutations<T>(this IEnumerable<T> items) {
         if (items == null) throw new ArgumentNullException("items");
-        return items.ToImmutableList().PermutationsHelper();
+        return items.ToImmutableList().DistinctPermutationsHelper();
     }
-    private static IEnumerable<ImmutableList<T>> PermutationsHelper<T>(this ImmutableList<T> items) {
+    private static IEnumerable<ImmutableList<T>> DistinctPermutationsHelper<T>(this ImmutableList<T> items) {
         if (items.Count == 0) return new[] {ImmutableList.Create<T>()};
         return from i in items.Indexes().DistinctBy(i => items[i])
                let head = items[i]
-               from tail in items.RemoveAt(i).PermutationsHelper()
+               from tail in items.RemoveAt(i).DistinctPermutationsHelper()
                select tail.Insert(0, head);
     }
 
@@ -63,7 +63,27 @@ public static class CollectionUtil {
             }
         }
     }
-    
+
+    public static IReadOnlyList<TItem> MaxesBy<TItem, TCompare>(this IEnumerable<TItem> sequence, Func<TItem, TCompare> projection) {
+        if (sequence == null) throw new ArgumentNullException("sequence");
+        if (projection == null) throw new ArgumentNullException("projection");
+
+        var result = new List<TItem>();
+        var maxSoFar = default(TCompare);
+        var comparer = Comparer<TCompare>.Default;
+
+        foreach (var e in sequence) {
+            var p = projection(e);
+            var d = result.Count == 0 ? +1 : comparer.Compare(p, maxSoFar);
+            if (d > 0) {
+                maxSoFar = p;
+                result.Clear();
+            }
+            if (d >= 0) result.Add(e);
+        }
+
+        return result;
+    }
     public static IEnumerable<IReadOnlyList<T>> Choose<T>(this IEnumerable<T> items, int size) {
         return items.ToArray().ChooseHelper(size);
     }

@@ -33,6 +33,17 @@ public class CollectionUtilTest {
     }
 
     [TestMethod]
+    public void TestMaxesBy() {
+        new int[0].MaxesBy(e => e % 3).AssertListEquals();
+        new int[1].MaxesBy(e => 1).AssertListEquals(0);
+
+        7.Range().MaxesBy(e => 1).AssertListEquals(7.Range());
+        7.Range().MaxesBy(e => e % 2).AssertListEquals(1, 3, 5);
+        2.Range().Skip(1).MaxesBy(e => e % 2).AssertListEquals(1);
+        7.Range().MaxesBy(e => e % 3).AssertListEquals(2, 5);
+        7.Range().MaxesBy(e => e % 4).AssertListEquals(3);
+    }
+    [TestMethod]
     public void TestChooseWithReplacement() {
         0.Range().ChooseWithReplacement(0, Int32.MaxValue)
          .AssertSequenceSimilar(new[] { 0.Range() });
@@ -44,7 +55,7 @@ public class CollectionUtilTest {
         1.Range().ChooseWithReplacement(1, Int32.MaxValue)
          .AssertSequenceSimilar(new[] { 1.Range() });
         1.Range().ChooseWithReplacement(2, Int32.MaxValue)
-         .AssertSequenceSimilar(new[] {Enumerable.Repeat(0, 2) });
+         .AssertSequenceSimilar(new[] { Enumerable.Repeat(0, 2) });
 
         3.Range().ChooseWithReplacement(0, Int32.MaxValue)
          .AssertSequenceSimilar(new[] { 0.Range() });
@@ -53,7 +64,7 @@ public class CollectionUtilTest {
         3.Range().ChooseWithReplacement(2, Int32.MaxValue)
          .AssertSequenceSimilar(
             new[] { 0, 0 },
-            new[] { 0, 1 }, 
+            new[] { 0, 1 },
             new[] { 0, 2 },
             new[] { 1, 1 },
             new[] { 1, 2 },
@@ -86,16 +97,16 @@ public class CollectionUtilTest {
         Enumerable.Empty<int[]>()
             .Concat()
             .AssertSequenceEquals(new int[0]);
-        
+
         Enumerable.Repeat(new int[0], 10)
             .Concat()
             .AssertSequenceEquals(new int[0]);
-        
+
         ReadOnlyList.Singleton(3.Range())
             .Concat()
             .AssertSequenceEquals(3.Range());
 
-        new[] {5.Range(), 10.Range().Skip(5), 15.Range().Skip(10)}
+        new[] { 5.Range(), 10.Range().Skip(5), 15.Range().Skip(10) }
             .Concat()
             .AssertSequenceEquals(15.Range());
     }
@@ -113,7 +124,7 @@ public class CollectionUtilTest {
                 Tuple.Create(1, 0),
                 Tuple.Create(1, 1));
 
-        new[] {1,2,3}.Cross(new[] {4,5})
+        new[] { 1, 2, 3 }.Cross(new[] { 4, 5 })
             .AssertListEquals(
                 Tuple.Create(1, 4),
                 Tuple.Create(1, 5),
@@ -179,7 +190,7 @@ public class CollectionUtilTest {
     public void TestIndexesList() {
         0.Range().Indexes().AssertListEquals();
         5.Range().Indexes().AssertListEquals(5.Range());
-        new[] {"a", "b"}.Indexes().AssertListEquals(0, 1);
+        new[] { "a", "b" }.Indexes().AssertListEquals(0, 1);
     }
 
     [TestMethod]
@@ -194,7 +205,7 @@ public class CollectionUtilTest {
         0.Range().Window(1).AssertListSimilar();
         0.Range().Window(2).AssertListSimilar();
 
-        1.Range().Window(1).AssertListSimilar(new[] {1.Range()});
+        1.Range().Window(1).AssertListSimilar(new[] { 1.Range() });
         1.Range().Window(2).AssertListSimilar();
 
         2.Range().Window(1).AssertListSimilar(new[] { 0 }, new[] { 1 });
@@ -253,7 +264,7 @@ public class CollectionUtilTest {
             .AssertSequenceSimilar(
                 new[] { 2, 1, 0 },
                 new[] { 1, 1, 1 });
-     
+
         CollectionUtil.DecreasingSequencesOfSize(length: 3, total: 4, max: 2)
             .AssertSequenceSimilar(
                 new[] { 2, 2, 0 },
@@ -271,10 +282,10 @@ public class CollectionUtilTest {
 
     [TestMethod]
     public void TestPermutations() {
-        0.Range().Permutations().Single().AssertSequenceSimilar(0.Range());
-        1.Range().Permutations().Single().AssertSequenceSimilar(1.Range());
-        2.Range().Permutations().AssertSequenceSimilar(new[] { 0, 1 }, new[] { 1, 0 });
-        3.Range().Permutations().AssertSequenceSimilar(
+        0.Range().DistinctPermutations().Single().AssertSequenceSimilar(0.Range());
+        1.Range().DistinctPermutations().Single().AssertSequenceSimilar(1.Range());
+        2.Range().DistinctPermutations().AssertSequenceSimilar(new[] { 0, 1 }, new[] { 1, 0 });
+        3.Range().DistinctPermutations().AssertSequenceSimilar(
             new[] { 0, 1, 2 },
             new[] { 0, 2, 1 },
             new[] { 1, 0, 2 },
@@ -282,6 +293,6 @@ public class CollectionUtilTest {
             new[] { 2, 0, 1 },
             new[] { 2, 1, 0 });
 
-        6.Range().Permutations().Count().AssertEquals(6*5*4*3*2);
+        6.Range().DistinctPermutations().Count().AssertEquals(6 * 5 * 4 * 3 * 2);
     }
 }
