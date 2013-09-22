@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Strilanc.LinqToCollections;
 using Strilanc.Value;
 using Int = System.Numerics.BigInteger;
 
+[DebuggerDisplay("{ToString()}")]
 public struct IntMatrix {
-    private readonly IReadOnlyList<IReadOnlyList<Int>> _columns;
+    private readonly Int[][] _columns;
     private IntMatrix(IEnumerable<IEnumerable<Int>> columns) {
         if (columns == null) throw new ArgumentNullException("columns");
         this._columns = columns.Select(e => e.ToArray()).ToArray();
-    }
-
-    public static implicit operator IntMatrix(Int value) {
-        return new IntMatrix(ReadOnlyList.Singleton(ReadOnlyList.Singleton(value)));
-    }
-    public static implicit operator IntMatrix(int value) {
-        return (Int)value;
     }
 
     public static IntMatrix FromColumns(IEnumerable<IEnumerable<Int>> columns) {
@@ -31,9 +26,6 @@ public struct IntMatrix {
 
     public IReadOnlyList<IReadOnlyList<Int>> Columns { get { return _columns ?? ReadOnlyList.Empty<IReadOnlyList<Int>>(); } }
     public IReadOnlyList<IReadOnlyList<Int>> Rows { get { return Columns.Transpose(); } }
-    public IntMatrix Transpose() {
-        return FromColumns(Columns.Transpose());
-    }
 
     public int Width { get { return Columns.Count; } }
     public int Height { get { return Columns.MayFirst().Select(e => e.Count).ElseDefault(); } }

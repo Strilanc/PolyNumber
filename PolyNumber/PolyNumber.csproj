@@ -63,6 +63,7 @@
     <Compile Include="Math\IntVector.cs" />
     <Compile Include="Math\IntPolynomial.cs" />
     <Compile Include="Math\ITerm.cs" />
+    <Compile Include="Math\Range.cs" />
     <Compile Include="Math\XTerm.cs" />
     <Compile Include="Math\Polynomial.cs" />
     <Compile Include="PolyNumber.cs" />

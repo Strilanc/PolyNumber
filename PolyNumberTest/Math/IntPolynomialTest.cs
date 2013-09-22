@@ -97,7 +97,7 @@ public class IntPolynomialTest {
 
     [TestMethod]
     public void DividesTest_ExhaustiveSmall() {
-        var roots = 3.Range().SelectMany(i => Enumerable.Repeat(Enumerable.Range(-4, 9).Select(e => (BigInteger)e), i).AllChoiceCombinations());
+        var roots = 3.Range().SelectMany(i => Enumerable.Repeat(Enumerable.Range(-2, 5).Select(e => (BigInteger)e), i).AllChoiceCombinations());
         foreach (var den in roots) {
             foreach (var num in roots) {
                 var actual = Polynomial.FromRoots(den).DividesScaled(Polynomial.FromRoots(num));
@@ -114,7 +114,7 @@ public class IntPolynomialTest {
     [TestMethod]
     public void PerturbedRootMultiplicationTest() {
         var rng = new Random(2357);
-        foreach (var repeat in 800.Range()) {
+        foreach (var repeat in 100.Range()) {
             var rootCount1 = rng.Next(5);
             var rootCount2 = rng.Next(5);
 
@@ -136,7 +136,7 @@ public class IntPolynomialTest {
     [TestMethod]
     public void PerturbedRootMultiplicationTest_LowDegree() {
         var rng = new Random(23571113);
-        foreach (var repeat in 2000.Range()) {
+        foreach (var repeat in 200.Range()) {
             var rootCount1 = rng.Next(3);
             var rootCount2 = rng.Next(3);
 

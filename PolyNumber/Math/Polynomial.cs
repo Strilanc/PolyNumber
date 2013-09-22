@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MoreLinq;
+using Numerics;
 using Strilanc.LinqToCollections;
 using Strilanc.Value;
 using Int = System.Numerics.BigInteger;
@@ -10,6 +11,15 @@ namespace Math {
     public static class Polynomial {
         public static Int EvaluateAt(this IntPolynomial<XTerm> polynomial, Int x) {
             return polynomial.Coefficients.Select(e => Int.Pow(x, (int)e.Key.XPower)*e.Value).Sum();
+        }
+        public static BigRational EvaluateAt(this IntPolynomial<XTerm> polynomial, BigRational x) {
+            return polynomial.Coefficients.Select(e => BigRational.Pow(x, (int)e.Key.XPower) * e.Value).Sum();
+        }
+        public static Int EvaluateAt(this IntPolynomial<XYTerm> polynomial, Int x, Int y) {
+            return polynomial.Coefficients.Select(e => Int.Pow(x, (int)e.Key.XPower) * Int.Pow(y, (int)e.Key.YPower) * e.Value).Sum();
+        }
+        public static BigRational EvaluateAt(this IntPolynomial<XYTerm> polynomial, BigRational x, BigRational y) {
+            return polynomial.Coefficients.Select(e => BigRational.Pow(x, (int)e.Key.XPower) * BigRational.Pow(y, (int)e.Key.YPower) * e.Value).Sum();
         }
 
         public static IntPolynomial<XTerm> FromRoots(IEnumerable<Int> roots) {
@@ -129,7 +139,109 @@ namespace Math {
 
             var lowCoefficients = solvedSystem.Columns[degreeOfSolution].Take(degreeOfSolution);
 
-            return Polynomial.XToThe(degreeOfSolution) - lowCoefficients.TimesPolynomialBasis();
+            return XToThe(degreeOfSolution) - lowCoefficients.TimesPolynomialBasis();
+        }
+        public static IntPolynomial<XTerm> Derivative(this IntPolynomial<XTerm> polynomial) {
+            return new IntPolynomial<XTerm>(
+                polynomial.Coefficients
+                .Where(e => e.Key.XPower > 0)
+                .Select(e => new XTerm(e.Key.XPower - 1).KeyVal(e.Value*e.Key.XPower)));
+        }
+        public static IEnumerable<Range<BigRational>> ApproximateRoots(this IntPolynomial<XTerm> polynomial, BigRational epsilon) {
+            return ApproximateRootsHelper(polynomial, epsilon).OrderBy(e => e.Min).Distinct();
+        }
+        private static IEnumerable<Range<BigRational>> ApproximateRootsHelper(this IntPolynomial<XTerm> polynomial, BigRational epsilon) {
+            if (epsilon <= 0) throw new ArgumentOutOfRangeException("epsilon");
+            if (!polynomial.Coefficients.Any()) throw new InvalidOperationException("Everything is a root...");
+
+            var degree = polynomial.Degree();
+            if (degree == 0) return new Range<BigRational>[0];
+
+            if (degree == 1)
+                return new Range<BigRational>[] {-polynomial.Coefficient(XToThe(0))/(BigRational)polynomial.Coefficient(XToThe(1))};
+
+            var criticalRegions =
+                polynomial
+                .Derivative()
+                .ApproximateRoots(epsilon)
+                .ToArray();
+
+            var lowerRoot = polynomial.BisectLower(criticalRegions.First().Min, epsilon);
+            var upperRoot = polynomial.BisectUpper(criticalRegions.Last().Max, epsilon);
+            var r0 = new[] {lowerRoot, upperRoot}.WhereHasValue();
+
+            var r1 = criticalRegions.Where(r => BigRational.Abs(polynomial.EvaluateAt((r.Min + r.Max)/2)) < epsilon);
+
+            var interRegions =
+                criticalRegions
+                .Window(2)
+                .Select(e => new Range<BigRational>(e.First().Max, e.Last().Min, false, false))
+                .ToArray();
+
+            var r2 = interRegions.Select(e => polynomial.Bisect(e.Min, e.Max, epsilon)).WhereHasValue();
+
+            return r0.Concat(r1).Concat(r2);
+        }
+        private static May<Range<BigRational>> BisectLower(this IntPolynomial<XTerm> polynomial, BigRational maxX, BigRational epsilon) {
+            var maxCoef = polynomial.Coefficients.MaxBy(e => e.Key.XPower);
+            var decreasingLimitSign = maxCoef.Value.Sign * (maxCoef.Key.XPower % 2 == 0 ? +1 : -1);
+
+            var maxS = polynomial.EvaluateAt(maxX).Sign;
+            if (maxS == decreasingLimitSign) return May.NoValue;
+            if (maxS == 0) return (Range<BigRational>)maxX;
+
+            var d = BigRational.One;
+            while (true) {
+                d *= 2;
+                var minX = maxX - d;
+                if (polynomial.EvaluateAt(minX).Sign != decreasingLimitSign) continue;
+                return polynomial.Bisect(minX, maxX, epsilon);
+            }
+        }
+        private static May<Range<BigRational>> BisectUpper(this IntPolynomial<XTerm> polynomial, BigRational minX, BigRational epsilon) {
+            var increasingLimitSign = polynomial.Coefficients.MaxBy(e => e.Key.XPower).Value.Sign;
+
+            var minS = polynomial.EvaluateAt(minX).Sign;
+            if (minS == increasingLimitSign) return May.NoValue;
+            if (minS == 0) return (Range<BigRational>)minX;
+
+            var d = BigRational.One;
+            while (true) {
+                d *= 2;
+                var maxX = minX + d;
+                if (polynomial.EvaluateAt(maxX).Sign != increasingLimitSign) continue;
+                return polynomial.Bisect(minX, maxX, epsilon);
+            }
+        }
+        public static IntPolynomial<XTerm> AddRoots(this IntPolynomial<XTerm> value1, IntPolynomial<XTerm> value2) {
+            var degree = value1.Degree() + value2.Degree();
+            return new IntPolynomial<XTerm>(
+                from d in degree.RangeInclusive()
+                let p = XToThe(d)
+                let s = (from d2 in d.RangeInclusive()
+                         select value1.Coefficient(XToThe(d2))*value2.Coefficient(XToThe(d - d2))
+                        ).Sum()
+                select p.KeyVal(s));
+        }
+        private static May<Range<BigRational>> Bisect(this IntPolynomial<XTerm> polynomial, BigRational minX, BigRational maxX, BigRational epsilon) {
+            var minS = polynomial.EvaluateAt(minX).Sign;
+            var maxS = polynomial.EvaluateAt(maxX).Sign;
+            if (minS == 0) return (Range<BigRational>)minX;
+            if (maxS == 0) return (Range<BigRational>)maxX;
+            
+            while (maxX - minX > epsilon) {
+                var x = (minX + maxX)/2;
+                var y = polynomial.EvaluateAt(x);
+                if (y == 0) return (Range<BigRational>)x;
+                if (BigRational.Abs(y) < epsilon) return new Range<BigRational>(minX, maxX, false, false);
+                if (y.Sign == minS) {
+                    minX = x;
+                } else {
+                    maxX = x;
+                }
+            }
+
+            return May.NoValue;
         }
     }
 }

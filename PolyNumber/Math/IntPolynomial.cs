@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Numerics;
 using Strilanc.LinqToCollections;
 using Strilanc.Value;
 using Int = System.Numerics.BigInteger;

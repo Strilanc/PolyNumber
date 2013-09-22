@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Numerics;
 using MoreLinq;
+using Numerics;
 using Strilanc.Exceptions;
 using Strilanc.LinqToCollections;
 using System.Linq;
 using Strilanc.Value;
 
 public static class CollectionUtil {
+    public static IEnumerable<BigInteger> RangeInclusive(this BigInteger max) {
+        return Naturals.Take(max + 1);
+    }
     public static IEnumerable<BigInteger> Range(this BigInteger count) {
         return Naturals.Take(count);
     }
@@ -229,18 +233,6 @@ public static class CollectionUtil {
         if (list == null) throw new ArgumentNullException("list");
         return list.Select((e, i) => i);
     }
-    public static IEnumerable<IReadOnlyList<T>> Window<T>(this IEnumerable<T> sequence, int windowSize) {
-        if (sequence == null) throw new ArgumentNullException("sequence");
-        if (windowSize <= 0) throw new ArgumentNotPositiveException("windowSize");
-        return sequence
-            .Stream(
-                ImmutableList.Create<T>(), 
-                (window, item) => 
-                    (window.Count < windowSize ? window : window.RemoveAt(0))
-                    .Add(item))
-            .Skip(windowSize - 1);
-    }
-
     public static IReadOnlyList<int> RangeInclusive(this int max) {
         if (max < 0) throw new ArgumentNegativeException("max < 0");
         return (max + 1).Range();
@@ -252,6 +244,10 @@ public static class CollectionUtil {
     public static BigInteger Sum(this IEnumerable<BigInteger> sequence) {
         if (sequence == null) throw new ArgumentNullException("sequence");
         return sequence.Aggregate(BigInteger.Zero, (a, e) => a + e);
+    }
+    public static BigRational Sum(this IEnumerable<BigRational> sequence) {
+        if (sequence == null) throw new ArgumentNullException("sequence");
+        return sequence.Aggregate(BigRational.Zero, (a, e) => a + e);
     }
     public static BigInteger Product(this Tuple<BigInteger, BigInteger> value) {
         if (value == null) throw new ArgumentNullException("value");

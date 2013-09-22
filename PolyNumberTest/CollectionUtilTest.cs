@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Numerics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MoreLinq;
 using Strilanc.LinqToCollections;
 
 [TestClass]
@@ -198,24 +199,6 @@ public class CollectionUtilTest {
         0.Range().AsEnumerable().Indexes().AssertSequenceEquals();
         5.Range().AsEnumerable().Indexes().AssertSequenceEquals(5.Range());
         new[] { "a", "b" }.AsEnumerable().Indexes().AssertSequenceEquals(0, 1);
-    }
-
-    [TestMethod]
-    public void TestWindowEnumerable() {
-        0.Range().AsEnumerable().Window(1).AssertSequenceSimilar();
-        0.Range().AsEnumerable().Window(2).AssertSequenceSimilar();
-
-        1.Range().AsEnumerable().Window(1).AssertSequenceSimilar(new[] { 1.Range() });
-        1.Range().AsEnumerable().Window(2).AssertSequenceSimilar();
-
-        2.Range().AsEnumerable().Window(1).AssertSequenceSimilar(new[] { 0 }, new[] { 1 });
-        2.Range().AsEnumerable().Window(2).AssertSequenceSimilar(new[] { 2.Range() });
-        2.Range().AsEnumerable().Window(3).AssertSequenceSimilar();
-
-        3.Range().AsEnumerable().Window(1).AssertSequenceSimilar(new[] { 0 }, new[] { 1 }, new[] { 2 });
-        3.Range().AsEnumerable().Window(2).AssertSequenceSimilar(new[] { 0, 1 }, new[] { 1, 2 });
-        3.Range().AsEnumerable().Window(3).AssertSequenceSimilar(new[] { 3.Range() });
-        3.Range().AsEnumerable().Window(4).AssertSequenceSimilar();
     }
 
     [TestMethod]

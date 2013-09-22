@@ -16,7 +16,7 @@ namespace Math {
         public XYTerm Times(XYTerm other) {
             return new XYTerm(XPower + other.XPower, YPower + other.YPower);
         }
-        private static string PowerFactorString(string var, Int power) {
+        public static string PowerFactorString(string var, Int power) {
             if (power == 0) return "";
             if (power == 1) return var;
             if (power == 2) return var + "²";

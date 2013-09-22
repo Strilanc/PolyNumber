@@ -16,13 +16,6 @@ namespace Math {
         public static implicit operator XTerm(Int power) {
             return new XTerm(power);
         }
-        private static string PowerFactorString(string var, Int power) {
-            if (power == 0) return "";
-            if (power == 1) return var;
-            if (power == 2) return var + "²";
-            if (power == 3) return var + "³";
-            return var + "^" + power;
-        }
         public static IntPolynomial<XTerm> operator *(XTerm term, Int factor) {
             return term.KeyVal(factor);
         }
@@ -30,7 +23,7 @@ namespace Math {
             return XPower.CompareTo(other.XPower);
         }
         public override string ToString() {
-            return PowerFactorString("x", XPower);
+            return XYTerm.PowerFactorString("x", XPower);
         }
     }
 }

@@ -70,6 +70,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Math\PolynomialTest.cs" />
     <Compile Include="Math\IntMatrixTest.cs" />
     <Compile Include="Math\IntPolynomialTest.cs" />
     <Compile Include="TestingUtilities.cs" />
