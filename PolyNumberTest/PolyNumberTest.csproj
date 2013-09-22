@@ -70,8 +70,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="IntegerMatrixTest.cs" />
-    <Compile Include="IntegerPolynomialTest.cs" />
+    <Compile Include="Math\IntMatrixTest.cs" />
+    <Compile Include="Math\IntPolynomialTest.cs" />
     <Compile Include="TestingUtilities.cs" />
     <Compile Include="CollectionUtilTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

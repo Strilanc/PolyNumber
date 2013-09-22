@@ -6,82 +6,6 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 public static class TestingUtilities {
-    public struct SimilarEquater<T> : IEqualityComparer<T> {
-        private static bool DynamicEquals(dynamic x, dynamic y) {
-            if (Object.Equals(x, y)) return true;
-            
-            if ((x == null) != (y == null)) return false;
-
-            var obj1 = (object)x;
-            var obj2 = (object)y;
-            if (obj1.GetType().IsGenericTypeCreatedFromDefinition(typeof(Dictionary<,>))
-                && obj2.GetType().IsGenericTypeCreatedFromDefinition(typeof(Dictionary<,>))) {
-                foreach (var key in Enumerable.Distinct(Enumerable.Concat(x.Keys, y.Keys))) {
-                    if (!x.ContainsKey(key)) return false;
-                    if (!y.ContainsKey(key)) return false;
-                    if (!DynamicEquals(x[key], y[key])) return false;
-                }
-                return true;
-            }
-            
-            if (x is IEnumerable && y is IEnumerable) {
-                return TestingUtilities.IsSequenceSimilar(x, y);
-            }
-
-            if (obj1.GetType().IsGenericTypeCreatedFromDefinition(typeof(Tuple<,>))
-                && obj2.GetType().IsGenericTypeCreatedFromDefinition(typeof(Tuple<,>))) {
-                return DynamicEquals(x.Item1, y.Item1) && DynamicEquals(x.Item2, y.Item2);
-            }
-
-            return false;
-        }
-        private static int DynamicGetHashCode(dynamic d) {
-            if (d == null) return 0;
-            var obj = (object)d;
-
-            if (obj.GetType().IsGenericTypeCreatedFromDefinition(typeof(Dictionary<,>))) {
-                return ((IEnumerable<object>)Enumerable.Cast<object>(d))
-                    .Select(DynamicGetHashCode)
-                    .Aggregate(0, (a, e) => (a ^ e) + 1);
-            }
-
-            if (obj is IEnumerable) {
-                return ((IEnumerable<object>)Enumerable.Cast<object>(d))
-                    .Select(DynamicGetHashCode)
-                    .Aggregate(0, (a, e) => (a * 53 ^ e) + 1);
-            }
-
-            if (obj.GetType().IsGenericTypeCreatedFromDefinition(typeof(Tuple<,>))) {
-                return DynamicGetHashCode(d.Item1) ^ (DynamicGetHashCode(d.Item2) * 3);
-            }
-
-            return d.GetHashCode();
-        }
-        public bool Equals(T x, T y) {
-            return DynamicEquals(x, y);
-        }
-        public int GetHashCode(T obj) {
-            return DynamicGetHashCode(obj);
-        }
-    }
-    public static T AssertInlineFail<T>(this T value) {
-        Assert.Fail(value.ToStringTryHarder());
-        return value;
-    }
-    public static void AssertHasSimilarItemsIgnoringOrder<T>(this IEnumerable<T> items1, IEnumerable<T> items2) {
-        var eq = new SimilarEquater<T>();
-        var g1 = items1.GroupBy(e => e, eq).ToDictionary(e => e.Key, e => e.Count(), eq);
-        var g2 = items2.GroupBy(e => e, eq).ToDictionary(e => e.Key, e => e.Count(), eq);
-        var b = new SimilarEquater<IReadOnlyDictionary<T, int>>().Equals(g1, g2);
-        if (!b)
-            Assert.Fail(
-                "{0} should have the same items (ignoring order) as {1}",
-                items1.ToStringTryHarder(),
-                items2.ToStringTryHarder());
-    }
-    public static bool IsGenericTypeCreatedFromDefinition(this Type type, Type typeDefinition) {
-        return type.IsGenericType && type.GetGenericTypeDefinition() == typeDefinition;
-    }
     [DebuggerStepThrough]
     public static void AssertTrue(this bool value) {
         Assert.IsTrue(value);
@@ -152,11 +76,13 @@ public static class TestingUtilities {
     public static string ToStringTryHarder(this object value) {
         if (value == null) return "null";
 
-        if (value is string) return (string)value;
-        
-        if (value is IEnumerable) {
+        var valueAsString = value as string;
+        if (valueAsString != null) return valueAsString;
+
+        var valueAsEnumerable = value as IEnumerable;
+        if (valueAsEnumerable != null) {
             return "{" + string.Join(", ", 
-                ((IEnumerable<object>)Enumerable.Cast<object>((dynamic)value))
+                valueAsEnumerable.Cast<object>()
                 .Select(ToStringTryHarder)) + "}";
         }
 

@@ -8,7 +8,7 @@ using Strilanc.LinqToCollections;
 using Strilanc.Value;
 
 [TestClass]
-public class IntegerPolynomialTest {
+public class IntPolynomialTest {
     [TestMethod]
     public void AdditionTest() {
         var p1 = Polynomial.FromBigEndianCoefficients(1, 2, 3);

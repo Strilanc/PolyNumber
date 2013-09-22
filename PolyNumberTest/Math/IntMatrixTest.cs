@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 [TestClass]
-public class IntegerMatrixTest {
+public class IntMatrixTest {
     [TestMethod]
     public void ReduceTest1() {
         var m = IntMatrix.FromRows(
