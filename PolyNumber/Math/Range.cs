@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Math {
+namespace Math2 {
     [DebuggerDisplay("{ToString()}")]
     public struct Range<T> where T : struct, IComparable<T> {
         public readonly T Min;

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using Numerics;
 using Int = System.Numerics.BigInteger;
 
-namespace Math {
+namespace Math2 {
     [DebuggerDisplay("{ToString()}")]
     public struct XTerm : ITerm<XTerm>, IComparable<XTerm> {
         public readonly Int XPower;
@@ -16,7 +17,7 @@ namespace Math {
         public static implicit operator XTerm(Int power) {
             return new XTerm(power);
         }
-        public static IntPolynomial<XTerm> operator *(XTerm term, Int factor) {
+        public static RationalPolynomial<XTerm> operator *(XTerm term, BigRational factor) {
             return term.KeyVal(factor);
         }
         public int CompareTo(XTerm other) {

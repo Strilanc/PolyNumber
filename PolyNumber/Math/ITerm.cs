@@ -1,4 +1,4 @@
-﻿namespace Math {
+﻿namespace Math2 {
     /// <summary>
     /// A component of a polynomial equation, such as X or X^2 or X*Y or X*Y^2*Z.
     /// 

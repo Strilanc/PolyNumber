@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Int = System.Numerics.BigInteger;
 
-namespace Math {
+namespace Math2 {
     [DebuggerDisplay("{ToString()}")]
     public struct XYTerm : ITerm<XYTerm>, IComparable<XYTerm> {
         public readonly Int XPower;

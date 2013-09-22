@@ -1,32 +1,33 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics;
 
 [TestClass]
-public class IntMatrixTest {
+public class RationalMatrixTest {
     [TestMethod]
     public void ReduceTest1() {
-        var m = IntMatrix.FromRows(
+        var m = RationalMatrix.FromRows(
             new[] { 4, 6 });
 
         var r = m.Reduced();
         r.Width.AssertEquals(m.Width);
         r.Height.AssertEquals(m.Height);
-        r.Rows[0].AssertSequenceEquals(2, 3);
+        r.Rows[0].AssertSequenceEquals(1, new BigRational(3, 2));
     }
 
     [TestMethod]
     public void ReduceTest2() {
-        var m = IntMatrix.FromRows(
+        var m = RationalMatrix.FromRows(
             new[] { -4, 6 });
 
         var r = m.Reduced();
         r.Width.AssertEquals(m.Width);
         r.Height.AssertEquals(m.Height);
-        r.Rows[0].AssertSequenceEquals(2, -3);
+        r.Rows[0].AssertSequenceEquals(1, new BigRational(-3, 2));
     }
 
     [TestMethod]
     public void ReduceTest3() {
-        var m = IntMatrix.FromRows(
+        var m = RationalMatrix.FromRows(
             new[] {1, 0, -2, 0, -14},
             new[] {0, 0, -3, 0, -15},
             new[] {0, 0, 0, 6, 0},

@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Numerics;
 
 public static class TestingUtilities {
     [DebuggerStepThrough]
@@ -13,6 +15,12 @@ public static class TestingUtilities {
     [DebuggerStepThrough]
     public static void AssertFalse(this bool value) {
         Assert.IsFalse(value);
+    }
+    public static BigRational HackFix_ToApproxBigRational(this double d) {
+        if (double.IsNaN(d) || double.IsInfinity(d)) throw new ArgumentException();
+        var scalePower = (int)Math.Ceiling(Math.Log(d, 2)) + 53;
+        var whole = (BigInteger)(long)Math.Round(d * Math.Pow(2, scalePower));
+        return whole/BigRational.Pow(2, scalePower);
     }
     public static T InvokeWithDefaultOnFail<T>(Func<T> v) {
         try {

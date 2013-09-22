@@ -2,36 +2,36 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Numerics;
 using Strilanc.LinqToCollections;
 using Strilanc.Value;
-using Int = System.Numerics.BigInteger;
 
 [DebuggerDisplay("{ToString()}")]
-public struct IntMatrix {
-    private readonly Int[][] _columns;
-    private IntMatrix(IEnumerable<IEnumerable<Int>> columns) {
+public struct RationalMatrix {
+    private readonly BigRational[][] _columns;
+    private RationalMatrix(IEnumerable<IEnumerable<BigRational>> columns) {
         if (columns == null) throw new ArgumentNullException("columns");
         this._columns = columns.Select(e => e.ToArray()).ToArray();
     }
 
-    public static IntMatrix FromColumns(IEnumerable<IEnumerable<Int>> columns) {
-        return new IntMatrix(columns);
+    public static RationalMatrix FromColumns(IEnumerable<IEnumerable<BigRational>> columns) {
+        return new RationalMatrix(columns);
     }
-    public static IntMatrix FromRows(IReadOnlyList<IReadOnlyList<Int>> rows) {
+    public static RationalMatrix FromRows(IReadOnlyList<IReadOnlyList<BigRational>> rows) {
         return FromColumns(rows.Transpose());
     }
-    public static IntMatrix FromRows(params int[][] rowData) {
-        return FromRows(rowData.Select(e => e.Select(f => (Int)f)));
+    public static RationalMatrix FromRows(params int[][] rowData) {
+        return FromRows(rowData.Select(e => e.Select(f => (BigRational)f)));
     }
 
-    public IReadOnlyList<IReadOnlyList<Int>> Columns { get { return _columns ?? ReadOnlyList.Empty<IReadOnlyList<Int>>(); } }
-    public IReadOnlyList<IReadOnlyList<Int>> Rows { get { return Columns.Transpose(); } }
+    public IReadOnlyList<IReadOnlyList<BigRational>> Columns { get { return _columns ?? ReadOnlyList.Empty<IReadOnlyList<BigRational>>(); } }
+    public IReadOnlyList<IReadOnlyList<BigRational>> Rows { get { return Columns.Transpose(); } }
 
     public int Width { get { return Columns.Count; } }
     public int Height { get { return Columns.MayFirst().Select(e => e.Count).ElseDefault(); } }
 
-    public IntMatrix Reduced() {
-        var rows = Rows.Select(row => new IntVector(row)).ToArray();
+    public RationalMatrix Reduced() {
+        var rows = Rows.Select(row => new RationalVector(row)).ToArray();
         var w = Width;
         var h = Height;
 
@@ -58,6 +58,6 @@ public struct IntMatrix {
     }
 
     public override string ToString() {
-        return string.Join(Environment.NewLine, Rows.Select(e => new IntVector(e)));
+        return string.Join(Environment.NewLine, Rows.Select(e => new RationalVector(e)));
     }
 }

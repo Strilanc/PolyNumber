@@ -1,7 +1,5 @@
-﻿using System;
-using System.Numerics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Math;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Math2;
 using Numerics;
 using System.Linq;
 
@@ -10,10 +8,10 @@ public class PolynomialTest {
     [TestMethod]
     public void TestEvaluateAt_X() {
         var p = Polynomial.FromBigEndianCoefficients(1, 2, 3);
-        p.EvaluateAt(0).AssertEquals((BigInteger)3);
-        p.EvaluateAt(1).AssertEquals((BigInteger)6);
-        p.EvaluateAt(2).AssertEquals((BigInteger)11);
-        p.EvaluateAt(3).AssertEquals((BigInteger)18);
+        p.EvaluateAt(0).AssertEquals((BigRational)3);
+        p.EvaluateAt(1).AssertEquals((BigRational)6);
+        p.EvaluateAt(2).AssertEquals((BigRational)11);
+        p.EvaluateAt(3).AssertEquals((BigRational)18);
 
         p.EvaluateAt(new BigRational(3, 2)).AssertEquals(new BigRational(33, 4));
     }

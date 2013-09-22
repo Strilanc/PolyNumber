@@ -56,12 +56,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Math\IntMatrix.cs" />
+    <Compile Include="Math\NumberUtil.cs" />
+    <Compile Include="Math\RationalPolynomial.cs" />
+    <Compile Include="Math\RationalMatrix.cs" />
     <Compile Include="Exceptions\ArgumentNegativeException.cs" />
     <Compile Include="Exceptions\ArgumentNotPositiveException.cs" />
     <Compile Include="Exceptions\ArgumentZeroException.cs" />
-    <Compile Include="Math\IntVector.cs" />
-    <Compile Include="Math\IntPolynomial.cs" />
+    <Compile Include="Math\RationalVector.cs" />
     <Compile Include="Math\ITerm.cs" />
     <Compile Include="Math\Range.cs" />
     <Compile Include="Math\XTerm.cs" />
