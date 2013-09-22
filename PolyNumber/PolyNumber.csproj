@@ -59,9 +59,6 @@
     <Compile Include="Math\NumberUtil.cs" />
     <Compile Include="Math\Polynomial.cs" />
     <Compile Include="Math\Matrix.cs" />
-    <Compile Include="Exceptions\ArgumentNegativeException.cs" />
-    <Compile Include="Exceptions\ArgumentNotPositiveException.cs" />
-    <Compile Include="Exceptions\ArgumentZeroException.cs" />
     <Compile Include="Math\Vector.cs" />
     <Compile Include="Math\ITerm.cs" />
     <Compile Include="Math\Range.cs" />

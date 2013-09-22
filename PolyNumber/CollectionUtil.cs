@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Numerics;
-using MoreLinq;
 using Numerics;
-using Strilanc.Exceptions;
 using Strilanc.LinqToCollections;
 using System.Linq;
 using Strilanc.Value;

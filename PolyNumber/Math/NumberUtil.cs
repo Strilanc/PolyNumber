@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Numerics;
-using MoreLinq;
-using Numerics;
-using Strilanc.Exceptions;
-using Strilanc.LinqToCollections;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Strilanc.Value;
 using Frac = Numerics.BigRational;
 using Int = System.Numerics.BigInteger;
 
