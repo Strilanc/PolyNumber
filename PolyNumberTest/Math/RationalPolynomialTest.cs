@@ -35,7 +35,7 @@ public class RationalPolynomialTest {
     public void MultiplicationTest2() {
         var p1 = Polynomial.FromBigEndianCoefficientsOverVar1Of2(1, 2);
         var p2 = Polynomial.FromBigEndianCoefficientsOverVar2Of2(2, 3, 5);
-        (p1 * p2).AssertEquals(new RationalPolynomial<XYTerm>(new Dictionary<XYTerm, BigRational> {
+        (p1 * p2).AssertEquals(new Polynomial<XYTerm>(new Dictionary<XYTerm, BigRational> {
             {new XYTerm(0, 0), 10},
             {new XYTerm(0, 1), 6},
             {new XYTerm(0, 2), 4},
@@ -76,7 +76,7 @@ public class RationalPolynomialTest {
         var roots2 = new BigRational[] { 1, -1 };
         var x1 = Polynomial.FromRoots(roots1);
         var x2 = Polynomial.FromRoots(roots2);
-        var x3 = Polynomial.FromRoots(roots1.Cross(roots2).Select(e => e.Item1 * e.Item2).Distinct());
+        var x3 = Polynomial.FromRoots((from r1 in roots1 from r2 in roots2 select r1 * r2).Distinct());
         var x3b = x1.MultiplyRoots(x2);
         x3b.AssertEquals(x3);
     }
@@ -97,33 +97,17 @@ public class RationalPolynomialTest {
     }
 
     [TestMethod]
-    public void DividesTest_ExhaustiveSmall() {
-        var roots = 3.Range().SelectMany(i => Enumerable.Repeat(Enumerable.Range(-2, 5).Select(e => (BigRational)e), i).AllChoiceCombinations());
-        foreach (var den in roots) {
-            foreach (var num in roots) {
-                var actual = Polynomial.FromRoots(den).Divides(Polynomial.FromRoots(num));
-
-                var den2 = den.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
-                var num2 = num.GroupBy(e => e).ToDictionary(e => e.Key, e => e.Count());
-                var canDivide = den2.All(e => num2.MayGetValue(e.Key).ElseDefault() >= e.Value);
-
-                actual.AssertEquals(canDivide);
-            }
-        }
-    }
-
-    [TestMethod]
     public void PerturbedRootMultiplicationTest() {
         var rng = new Random(2357);
-        foreach (var repeat in 100.Range()) {
+        foreach (var repeat in 25.Range()) {
             var rootCount1 = rng.Next(5);
             var rootCount2 = rng.Next(5);
 
             var roots1 = rootCount1.Range().Select(e => (BigRational)rng.Next(-50, 50)).ToArray();
             var roots2 = rootCount2.Range().Select(e => (BigRational)rng.Next(-50, 50)).ToArray();
 
-            var roots3Max = roots1.Cross(roots2).Select(e => e.Item1 * e.Item2).ToArray();
-            var roots3Min = roots1.Cross(roots2).Select(e => e.Item1 * e.Item2).Distinct().ToArray();
+            var roots3Max = (from r1 in roots1 from r2 in roots2 select r1 * r2).ToArray();
+            var roots3Min = (from r1 in roots1 from r2 in roots2 select r1 * r2).Distinct().ToArray();
 
             var poly1 = Polynomial.FromRoots(roots1);
             var poly2 = Polynomial.FromRoots(roots2);
@@ -144,8 +128,8 @@ public class RationalPolynomialTest {
             var roots1 = rootCount1.Range().Select(e => (BigRational)rng.Next(-50, 50)).ToArray();
             var roots2 = rootCount2.Range().Select(e => (BigRational)rng.Next(-50, 50)).ToArray();
 
-            var roots3Max = roots1.Cross(roots2).Select(e => e.Item1 * e.Item2).ToArray();
-            var roots3Min = roots1.Cross(roots2).Select(e => e.Item1 * e.Item2).Distinct().ToArray();
+            var roots3Max = (from r1 in roots1 from r2 in roots2 select r1 * r2).ToArray();
+            var roots3Min = (from r1 in roots1 from r2 in roots2 select r1 * r2).Distinct().ToArray();
 
             var poly1 = Polynomial.FromRoots(roots1);
             var poly2 = Polynomial.FromRoots(roots2);

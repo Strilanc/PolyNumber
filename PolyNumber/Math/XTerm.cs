@@ -17,7 +17,7 @@ namespace Math2 {
         public static implicit operator XTerm(Int power) {
             return new XTerm(power);
         }
-        public static RationalPolynomial<XTerm> operator *(XTerm term, BigRational factor) {
+        public static Polynomial<XTerm> operator *(XTerm term, BigRational factor) {
             return term.KeyVal(factor);
         }
         public int CompareTo(XTerm other) {

@@ -7,20 +7,20 @@ using Strilanc.LinqToCollections;
 using Strilanc.Value;
 
 [DebuggerDisplay("{ToString()}")]
-public struct RationalMatrix {
+public struct Matrix {
     private readonly BigRational[][] _columns;
-    private RationalMatrix(IEnumerable<IEnumerable<BigRational>> columns) {
+    private Matrix(IEnumerable<IEnumerable<BigRational>> columns) {
         if (columns == null) throw new ArgumentNullException("columns");
         this._columns = columns.Select(e => e.ToArray()).ToArray();
     }
 
-    public static RationalMatrix FromColumns(IEnumerable<IEnumerable<BigRational>> columns) {
-        return new RationalMatrix(columns);
+    public static Matrix FromColumns(IEnumerable<IEnumerable<BigRational>> columns) {
+        return new Matrix(columns);
     }
-    public static RationalMatrix FromRows(IReadOnlyList<IReadOnlyList<BigRational>> rows) {
+    public static Matrix FromRows(IReadOnlyList<IReadOnlyList<BigRational>> rows) {
         return FromColumns(rows.Transpose());
     }
-    public static RationalMatrix FromRows(params int[][] rowData) {
+    public static Matrix FromRows(params int[][] rowData) {
         return FromRows(rowData.Select(e => e.Select(f => (BigRational)f)));
     }
 
@@ -30,8 +30,8 @@ public struct RationalMatrix {
     public int Width { get { return Columns.Count; } }
     public int Height { get { return Columns.MayFirst().Select(e => e.Count).ElseDefault(); } }
 
-    public RationalMatrix Reduced() {
-        var rows = Rows.Select(row => new RationalVector(row)).ToArray();
+    public Matrix Reduced() {
+        var rows = Rows.Select(row => new Vector(row)).ToArray();
         var w = Width;
         var h = Height;
 
@@ -58,6 +58,6 @@ public struct RationalMatrix {
     }
 
     public override string ToString() {
-        return string.Join(Environment.NewLine, Rows.Select(e => new RationalVector(e)));
+        return string.Join(Environment.NewLine, Rows.Select(e => new Vector(e)));
     }
 }

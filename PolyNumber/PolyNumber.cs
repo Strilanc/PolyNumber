@@ -8,8 +8,8 @@ using System.Linq;
 public struct PolyNumber {
     public static PolyNumber Zero { get { return 0; } }
 
-    public readonly RationalPolynomial<XTerm> Constraint;
-    public PolyNumber(RationalPolynomial<XTerm> constraint) {
+    public readonly Polynomial<XTerm> Constraint;
+    public PolyNumber(Polynomial<XTerm> constraint) {
         if (constraint.Degree() < 1) throw new ArgumentOutOfRangeException("constraint", "No solutions.");
         Constraint = constraint.ToIntegerForm();
     }
@@ -64,11 +64,13 @@ public struct PolyNumber {
         return Constraint.EvaluateAt(root) == 0;
     }
     public bool HasValueNear(BigRational value, BigRational? epsilon = null) {
+        var eps = epsilon ?? new BigRational(1, 1000000);
         var y = BigRational.Abs(Constraint.EvaluateAt(value));
-        return y < (epsilon ?? new BigRational(1, 1000000));
+        return y < eps;
     }
     public double[] Approximates(BigRational? epsilon = null) {
-        return Constraint.ApproximateRoots(epsilon ?? new BigRational(1, 1000000)).Select(e => (double)(e.Min + e.Max)/2).ToArray();
+        var eps = epsilon ?? new BigRational(1, 1000000);
+        return Constraint.ApproximateRoots(eps).Select(e => (double)(e.Min + e.Max) / 2).ToArray();
     }
 
     public override string ToString() {

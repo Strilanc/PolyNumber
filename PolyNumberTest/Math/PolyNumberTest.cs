@@ -22,7 +22,7 @@ public class PolyNumberTest {
         for (var i = 1; i < 5; i++) {
             for (var n = 1; n < 3; n++) {
                 var r = ((PolyNumber)n).Root(i);
-                Assert.AreEqual(r.Approximates().Last(), System.Math.Pow(n, 1.0 / i), 0.00001);
+                Assert.AreEqual(r.Approximates().Last(), Math.Pow(n, 1.0 / i), 0.00001);
                 r.RaiseTo(i).HasValue(n).AssertTrue();
             }
         }
