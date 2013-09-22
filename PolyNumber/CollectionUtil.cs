@@ -90,7 +90,7 @@ public static class CollectionUtil {
             }
         }
     }
-    private static IEnumerator<IImmutableList<T>> AllChoiceCombinationsOfRemainder<T>(this IEnumerator<IEnumerable<T>> sequenceOfChoices) {
+    private static IEnumerator<ImmutableList<T>> AllChoiceCombinationsOfRemainder<T>(this IEnumerator<IEnumerable<T>> sequenceOfChoices) {
         if (!sequenceOfChoices.MoveNext()) {
             yield return ImmutableList.Create<T>();
             yield break;
@@ -132,7 +132,7 @@ public static class CollectionUtil {
     public static IEnumerable<IReadOnlyList<T>> Choose<T>(this IReadOnlyList<T> items, int numberOfItemsToChoose) {
         return items.ChooseHelper(numberOfItemsToChoose);
     }
-    private static IEnumerable<IImmutableList<T>> ChooseHelper<T>(this IReadOnlyList<T> items, int numberOfItemsToChoose) {
+    private static IEnumerable<ImmutableList<T>> ChooseHelper<T>(this IReadOnlyList<T> items, int numberOfItemsToChoose) {
         if (items == null) throw new ArgumentNullException("items");
         if (numberOfItemsToChoose < 0) throw new ArgumentOutOfRangeException("numberOfItemsToChoose", "numberOfItemsToChoose < 0");
         if (numberOfItemsToChoose == 0) return new[] { ImmutableList.Create<T>() };
@@ -148,7 +148,7 @@ public static class CollectionUtil {
     public static IEnumerable<IReadOnlyList<T>> ChooseWithReplacement<T>(this IReadOnlyList<T> items, int numberOfItemsToDraw) {
         return items.ChooseWithReplacementHelper(numberOfItemsToDraw);
     }
-    private static IEnumerable<IImmutableList<T>> ChooseWithReplacementHelper<T>(this IReadOnlyList<T> items, int numberOfItemsToDraw) {
+    private static IEnumerable<ImmutableList<T>> ChooseWithReplacementHelper<T>(this IReadOnlyList<T> items, int numberOfItemsToDraw) {
         if (items == null) throw new ArgumentNullException("items");
         if (numberOfItemsToDraw < 0) throw new ArgumentOutOfRangeException("numberOfItemsToDraw", "numberOfItemsToDraw < 0");
         if (numberOfItemsToDraw == 0) return new[] { ImmutableList.Create<T>() };
