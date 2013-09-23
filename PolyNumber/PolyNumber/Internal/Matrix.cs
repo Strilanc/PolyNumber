@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Numerics;
 using Strilanc.LinqToCollections;
 using Strilanc.Value;
+using Frac = Numerics.BigRational;
 
 namespace Strilanc.PolyNumber.Internal {
     /// <summary>
@@ -12,24 +12,24 @@ namespace Strilanc.PolyNumber.Internal {
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
     internal struct Matrix {
-        private readonly BigRational[][] _columns;
-        private Matrix(IEnumerable<IEnumerable<BigRational>> columns) {
+        private readonly Frac[][] _columns;
+        private Matrix(IEnumerable<IEnumerable<Frac>> columns) {
             if (columns == null) throw new ArgumentNullException("columns");
             this._columns = columns.Select(e => e.ToArray()).ToArray();
         }
 
-        public static Matrix FromColumns(IEnumerable<IEnumerable<BigRational>> columns) {
+        public static Matrix FromColumns(IEnumerable<IEnumerable<Frac>> columns) {
             return new Matrix(columns);
         }
-        public static Matrix FromRows(IReadOnlyList<IReadOnlyList<BigRational>> rows) {
+        public static Matrix FromRows(IReadOnlyList<IReadOnlyList<Frac>> rows) {
             return FromColumns(rows.Transpose());
         }
         public static Matrix FromRows(params int[][] rowData) {
-            return FromRows(rowData.Select(e => e.Select(f => (BigRational)f)));
+            return FromRows(rowData.Select(e => e.Select(f => (Frac)f)));
         }
 
-        public IReadOnlyList<IReadOnlyList<BigRational>> Columns { get { return _columns ?? ReadOnlyList.Empty<IReadOnlyList<BigRational>>(); } }
-        public IReadOnlyList<IReadOnlyList<BigRational>> Rows { get { return Columns.Transpose(); } }
+        public IReadOnlyList<IReadOnlyList<Frac>> Columns { get { return _columns ?? ReadOnlyList.Empty<IReadOnlyList<Frac>>(); } }
+        public IReadOnlyList<IReadOnlyList<Frac>> Rows { get { return Columns.Transpose(); } }
 
         public int Width { get { return Columns.Count; } }
         public int Height { get { return Columns.MayFirst().Select(e => e.Count).ElseDefault(); } }

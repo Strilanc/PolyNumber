@@ -5,6 +5,11 @@ using Strilanc.PolyNumber.Internal;
 using System.Linq;
 
 namespace Strilanc.PolyNumber {
+    /// <summary>
+    /// Represents numbers implicitly, as the roots of polynomials.
+    /// This allows the exact representation of radicals like the third root of two.
+    /// Mostly experimental. Very slow, issues with complex roots and root multiplicity, etc.
+    /// </summary>
     public struct PolyNumber {
         public static PolyNumber Zero { get { return 0; } }
 
@@ -25,6 +30,8 @@ namespace Strilanc.PolyNumber {
         }
 
         public PolyNumber MultiplicativeInverse() {
+            if (HasValue(0)) throw new DivideByZeroException();
+
             var degree = Constraint.Degree();
             var rev = Constraint.Coefficients.SelectKeyValue(e => new XTerm(degree - e.Key.XPower), e => e.Value).ToPolynomial();
             return new PolyNumber(rev);
