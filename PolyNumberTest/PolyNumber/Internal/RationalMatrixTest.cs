@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Numerics;
+using Strilanc.PolyNumber.Internal;
 
 [TestClass]
 public class RationalMatrixTest {

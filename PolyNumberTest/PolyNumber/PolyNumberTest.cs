@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
-using Math2;
+using Strilanc.PolyNumber;
+using Strilanc.PolyNumber.Internal;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using Numerics;

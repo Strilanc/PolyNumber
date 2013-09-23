@@ -3,9 +3,9 @@ using System.Diagnostics;
 using Numerics;
 using Int = System.Numerics.BigInteger;
 
-namespace Math2 {
+namespace Strilanc.PolyNumber.Internal {
     [DebuggerDisplay("{ToString()}")]
-    public struct XTerm : ITerm<XTerm>, IComparable<XTerm> {
+    internal struct XTerm : ITerm<XTerm>, IComparable<XTerm> {
         public readonly Int XPower;
         public XTerm(Int xPower) {
             if (xPower < 0) throw new ArgumentOutOfRangeException();

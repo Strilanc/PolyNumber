@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using Int = System.Numerics.BigInteger;
 
-namespace Math2 {
+namespace Strilanc.PolyNumber.Internal {
     [DebuggerDisplay("{ToString()}")]
-    public struct XYTerm : ITerm<XYTerm>, IComparable<XYTerm> {
+    internal struct XYTerm : ITerm<XYTerm>, IComparable<XYTerm> {
         public readonly Int XPower;
         public readonly Int YPower;
         public XYTerm(Int xPower, Int yPower) {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Math2 {
+namespace Strilanc.PolyNumber.Internal {
     [DebuggerDisplay("{ToString()}")]
-    public struct Range<T> where T : struct, IComparable<T> {
+    internal struct Range<T> where T : struct, IComparable<T> {
         public readonly T Min;
         public readonly T Max;
         public readonly bool ExcludeMin;

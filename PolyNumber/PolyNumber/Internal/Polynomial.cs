@@ -7,9 +7,9 @@ using Numerics;
 using Strilanc.LinqToCollections;
 using Strilanc.Value;
 
-namespace Math2 {
+namespace Strilanc.PolyNumber.Internal {
     [DebuggerDisplay("{ToString()}")]
-    public struct Polynomial<TTerm> : IEquatable<Polynomial<TTerm>> where TTerm : ITerm<TTerm> {
+    internal struct Polynomial<TTerm> : IEquatable<Polynomial<TTerm>> where TTerm : ITerm<TTerm> {
         public static Polynomial<TTerm> Zero { get { return new Polynomial<TTerm>(); } }
         private readonly Dictionary<TTerm, BigRational> _coefficients;
         public IReadOnlyDictionary<TTerm, BigRational> Coefficients { get { return _coefficients ?? ReadOnlyDictionary.Empty<TTerm, BigRational>(); } }

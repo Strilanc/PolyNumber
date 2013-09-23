@@ -7,8 +7,8 @@ using Strilanc.Value;
 using Frac = Numerics.BigRational;
 using Int = System.Numerics.BigInteger;
 
-namespace Math2 {
-    public static class Polynomial {
+namespace Strilanc.PolyNumber.Internal {
+    internal static class Polynomial {
         public static Frac EvaluateAt(this Polynomial<XTerm> polynomial, Frac x) {
             return polynomial.Coefficients.Select(e => Frac.Pow(x, (int)e.Key.XPower) * e.Value).Sum();
         }

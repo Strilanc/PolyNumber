@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Math2;
+using Strilanc.PolyNumber.Internal;
 using Numerics;
 using System.Linq;
 

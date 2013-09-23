@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using Math2;
+using Strilanc.PolyNumber.Internal;
 using Numerics;
 using Strilanc.LinqToCollections;
 using Strilanc.Value;
