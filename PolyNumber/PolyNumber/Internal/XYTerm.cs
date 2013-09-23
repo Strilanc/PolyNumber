@@ -3,6 +3,10 @@ using System.Diagnostics;
 using Int = System.Numerics.BigInteger;
 
 namespace Strilanc.PolyNumber.Internal {
+    /// <summary>
+    /// One of the terms in a polynomial over an X variable and a Y variable, without its coefficient.
+    /// For example, could be the "xy" term in the polynomial "3xy + x + 2y + 1".
+    /// </summary>
     [DebuggerDisplay("{ToString()}")]
     internal struct XYTerm : ITerm<XYTerm>, IComparable<XYTerm> {
         public readonly Int XPower;

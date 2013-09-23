@@ -7,6 +7,9 @@ using Strilanc.LinqToCollections;
 using Strilanc.Value;
 
 namespace Strilanc.PolyNumber.Internal {
+    /// <summary>
+    /// A matrix of rational numbers, representing a linear system to be solved.
+    /// </summary>
     [DebuggerDisplay("{ToString()}")]
     internal struct Matrix {
         private readonly BigRational[][] _columns;

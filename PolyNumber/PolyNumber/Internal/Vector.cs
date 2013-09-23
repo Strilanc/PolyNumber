@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Numerics;
 using Strilanc.LinqToCollections;
 
 namespace Strilanc.PolyNumber.Internal {
+    /// <summary>
+    /// An ordered sequence of rational numbers.
+    /// </summary>
+    [DebuggerDisplay("{ToString()}")]
     internal struct Vector {
         private readonly BigRational[] _values;
         public IReadOnlyList<BigRational> Values { get { return _values ?? new BigRational[0]; } }
@@ -12,15 +17,6 @@ namespace Strilanc.PolyNumber.Internal {
         public Vector(IEnumerable<BigRational> values) {
             if (values == null) throw new ArgumentNullException("values");
             this._values = values.ToArray();
-        }
-        public static implicit operator Vector(BigRational[] value) {
-            return new Vector(value);
-        }
-        public static implicit operator Vector(BigRational value) {
-            return new Vector(ReadOnlyList.Singleton(value));
-        }
-        public static implicit operator Vector(int value) {
-            return (BigRational)value;
         }
 
         public static Vector operator -(Vector vector) {
@@ -44,7 +40,7 @@ namespace Strilanc.PolyNumber.Internal {
         public Vector CancelIndexWith(int index, Vector other) {
             var e = Values[index];
             var r = other.Values[index];
-            return this*r - other*e;
+            return this - other * (e / r);
         }
         public Vector Reduce() {
             var d = Values.FirstOrDefault(e => e != 0);
@@ -58,7 +54,6 @@ namespace Strilanc.PolyNumber.Internal {
         public static bool operator !=(Vector vector1, Vector vector2) {
             return !vector1.Equals(vector2);
         }
-
         public bool Equals(Vector other) {
             return Values.SequenceEqual(other.Values);
         }

@@ -10,10 +10,10 @@ using Int = System.Numerics.BigInteger;
 namespace Strilanc.PolyNumber.Internal {
     internal static class Polynomial {
         public static Frac EvaluateAt(this Polynomial<XTerm> polynomial, Frac x) {
-            return polynomial.Coefficients.Select(e => Frac.Pow(x, (int)e.Key.XPower) * e.Value).Sum();
+            return polynomial.Coefficients.Select(e => Frac.Pow(x, (int)e.Key.XPower)*e.Value).Sum();
         }
         public static Frac EvaluateAt(this Polynomial<XYTerm> polynomial, Frac x, Frac y) {
-            return polynomial.Coefficients.Select(e => Frac.Pow(x, (int)e.Key.XPower) * Frac.Pow(y, (int)e.Key.YPower) * e.Value).Sum();
+            return polynomial.Coefficients.Select(e => Frac.Pow(x, (int)e.Key.XPower)*Frac.Pow(y, (int)e.Key.YPower)*e.Value).Sum();
         }
 
         public static Polynomial<XTerm> FromRoots(IEnumerable<Frac> roots) {
@@ -71,63 +71,53 @@ namespace Strilanc.PolyNumber.Internal {
                 var nt = remainder.Coefficient(d1);
                 var dt = denominator.Coefficient(d2);
 
-                remainder -= denominator * XToThe(d1 - d2) * (nt / dt);
+                remainder -= denominator*XToThe(d1 - d2)*(nt/dt);
 
                 if (remainder.Degree() == d1) throw new Exception();
             }
 
             return remainder == 0;
         }
-        private static IEnumerable<Polynomial<XTerm>> RewritePolyBasisUsing(XTerm termToRewrite,
-                                                                                    Polynomial<XTerm> rewrittenTerm) {
+        public static Polynomial<TTerm> ToIntegerForm<TTerm>(this Polynomial<TTerm> polynomial) where TTerm : ITerm<TTerm> {
+            var lcm = polynomial.Coefficients.Select(e => e.Value).LeastCommonDenominator();
+            return polynomial*lcm;
+        }
+
+        private static IEnumerable<Polynomial<XTerm>> PolyBasisWithHighPowersReducedUsing(Polynomial<XTerm> polynomial) {
+            var termToRewrite = polynomial.Coefficients.MaxBy(e => e.Key.XPower);
+            var rewrittenTerm = (termToRewrite - polynomial)/termToRewrite.Value;
+
             var X = new XTerm(1);
             var r = rewrittenTerm - termToRewrite;
 
             var cur = (Polynomial<XTerm>)1;
             yield return cur;
 
-            for (var i = 1; i < termToRewrite.XPower; i++) {
+            for (var i = 1; i < termToRewrite.Key.XPower; i++) {
                 cur *= X;
                 yield return cur;
             }
             while (true) {
                 cur = cur*X;
-                var factor = cur.Coefficient(termToRewrite);
+                var factor = cur.Coefficient(termToRewrite.Key);
                 cur += r*factor;
                 yield return cur;
             }
         }
-        public static Polynomial<XTerm> ToMonicForm(this Polynomial<XTerm> polynomial) {
-            var highCoef = polynomial.Coefficients.MayMaxBy(e => e.Key.XPower).Select(e => e.Value).Else(1);
-            return polynomial/highCoef;
-        }
-        public static Polynomial<TTerm> ToIntegerForm<TTerm>(this Polynomial<TTerm> polynomial) where TTerm : ITerm<TTerm> {
-            var lcm = polynomial.Coefficients.Select(e => e.Value).LeastCommonDenominator();
-            return polynomial * lcm;
-        }
-        private static IEnumerable<Polynomial<XTerm>> RewritePolyBasisUsing(Polynomial<XTerm> poly) {
-            var termToRewrite = poly.Coefficients.MaxBy(e => e.Key.XPower);
-            var rewrittenTerm = (termToRewrite - poly) / termToRewrite.Value;
-            return RewritePolyBasisUsing(termToRewrite.Key, rewrittenTerm);
-        }
 
-        public static Polynomial<XTerm> MultiplyRoots(this Polynomial<XTerm> poly1,
-                                                              Polynomial<XTerm> poly2) {
+        public static Polynomial<XTerm> MultiplyRoots(this Polynomial<XTerm> poly1, Polynomial<XTerm> poly2) {
             var deg1 = poly1.Degree();
             var deg2 = poly2.Degree();
 
             var maxDegreeOfResult = deg1*deg2;
             if (maxDegreeOfResult == 0) return 1;
 
-            var rewrittenPowers1 = RewritePolyBasisUsing(poly1).Select(p => p.ToPolynomialOverVariable1Of2());
-            var rewrittenPowers2 = RewritePolyBasisUsing(poly2).Select(p => p.ToPolynomialOverVariable2Of2());
-            var rewrittenPowerPairs =
-                rewrittenPowers1.Zip(rewrittenPowers2,
-                                     Polynomial<XYTerm>.Multiply)
-                                .Take(maxDegreeOfResult + 1);
+            var reducedPowersOfX = PolyBasisWithHighPowersReducedUsing(poly1).Select(p => p.ToPolynomialOverVariable1Of2());
+            var reducedPowersOfY = PolyBasisWithHighPowersReducedUsing(poly2).Select(p => p.ToPolynomialOverVariable2Of2());
+            var reducedPowersOfXY = reducedPowersOfX.Zip(reducedPowersOfY, Polynomial<XYTerm>.Multiply).Take(maxDegreeOfResult + 1);
 
             var linearSystem = Matrix.FromColumns(
-                from col in rewrittenPowerPairs
+                from col in reducedPowersOfXY
                 select from row in maxDegreeOfResult.Range()
                        let exponentForX = row/deg2
                        let exponentForY = row%deg2
@@ -143,36 +133,33 @@ namespace Strilanc.PolyNumber.Internal {
         }
         public static Polynomial<TTerm> Sum<TTerm>(this IEnumerable<Polynomial<TTerm>> polys) where TTerm : ITerm<TTerm> {
             return polys.Aggregate(Polynomial<TTerm>.Zero, (a, e) => a + e);
-        }  
-        public static Polynomial<XTerm> AddRoots(this Polynomial<XTerm> poly1,
-                                                          Polynomial<XTerm> poly2) {
+        }
+        public static Polynomial<XTerm> AddRoots(this Polynomial<XTerm> poly1, Polynomial<XTerm> poly2) {
             var deg1 = poly1.Degree();
             var deg2 = poly2.Degree();
+
+            Polynomial<XYTerm> X = new XYTerm(1, 0);
+            Polynomial<XYTerm> Y = new XYTerm(0, 1);
+            var powersOfXPlusY = CollectionUtil.Naturals.Select(e => (X + Y).RaisedTo(e));
 
             var maxDegreeOfResult = deg1*deg2;
             if (maxDegreeOfResult == 0) return 1;
 
-            var rewrittenPowers1 = RewritePolyBasisUsing(poly1).Select(p => p.ToPolynomialOverVariable1Of2()).Take(maxDegreeOfResult + 1).ToArray();
-            var rewrittenPowers2 = RewritePolyBasisUsing(poly2).Select(p => p.ToPolynomialOverVariable2Of2()).Take(maxDegreeOfResult + 1).ToArray();
-
-            Polynomial<XYTerm> X = new XYTerm(1, 0);
-            Polynomial<XYTerm> Y = new XYTerm(0, 1);
-            var raiseds = 
-                CollectionUtil.Naturals
-                .Select(e => (X + Y).RaisedTo(e))
-                .Take(maxDegreeOfResult + 1)
-                .ToArray();
-
-            var rewritten = 
-                raiseds
-                .Select(e => 
-                    e.Coefficients
-                    .Select(r => rewrittenPowers1[(int)r.Key.XPower]*rewrittenPowers2[(int)r.Key.YPower]*r.Value)
-                    .Sum())
-                .ToArray();
+            var reducedPowersOfX =
+                PolyBasisWithHighPowersReducedUsing(poly1).Select(p => p.ToPolynomialOverVariable1Of2()).Take(maxDegreeOfResult + 1).ToArray();
+            var reducedPowersOfY =
+                PolyBasisWithHighPowersReducedUsing(poly2).Select(p => p.ToPolynomialOverVariable2Of2()).Take(maxDegreeOfResult + 1).ToArray();
+            var reducedPowersOfXPlusY =
+                powersOfXPlusY
+                    .Select(e =>
+                            e.Coefficients
+                             .Select(r => reducedPowersOfX[(int)r.Key.XPower]*reducedPowersOfY[(int)r.Key.YPower]*r.Value)
+                             .Sum())
+                    .Take(maxDegreeOfResult + 1)
+                    .ToArray();
 
             var linearSystem = Matrix.FromColumns(
-                from col in rewritten
+                from col in reducedPowersOfXPlusY
                 select from row in maxDegreeOfResult.Range()
                        let exponentForX = row/deg2
                        let exponentForY = row%deg2
@@ -189,8 +176,8 @@ namespace Strilanc.PolyNumber.Internal {
         public static Polynomial<XTerm> Derivative(this Polynomial<XTerm> polynomial) {
             return new Polynomial<XTerm>(
                 polynomial.Coefficients
-                .Where(e => e.Key.XPower > 0)
-                .Select(e => new XTerm(e.Key.XPower - 1).KeyVal(e.Value*e.Key.XPower)));
+                          .Where(e => e.Key.XPower > 0)
+                          .Select(e => new XTerm(e.Key.XPower - 1).KeyVal(e.Value*e.Key.XPower)));
         }
         public static IEnumerable<Range<Frac>> ApproximateRoots(this Polynomial<XTerm> polynomial, Frac epsilon) {
             return ApproximateRootsHelper(polynomial, epsilon).OrderBy(e => e.Min).Distinct();
@@ -207,9 +194,9 @@ namespace Strilanc.PolyNumber.Internal {
 
             var criticalRegions =
                 polynomial
-                .Derivative()
-                .ApproximateRoots(epsilon)
-                .ToArray();
+                    .Derivative()
+                    .ApproximateRoots(epsilon)
+                    .ToArray();
 
             var lowerRoot = polynomial.BisectLower(criticalRegions.First().Min, epsilon);
             var upperRoot = polynomial.BisectUpper(criticalRegions.Last().Max, epsilon);
@@ -219,10 +206,10 @@ namespace Strilanc.PolyNumber.Internal {
 
             var interRegions =
                 criticalRegions
-                .Window(2)
-                .Where(e => e.Count() == 2)
-                .Select(e => new Range<Frac>(e.First().Max, e.Last().Min, false, false))
-                .ToArray();
+                    .Window(2)
+                    .Where(e => e.Count() == 2)
+                    .Select(e => new Range<Frac>(e.First().Max, e.Last().Min, false, false))
+                    .ToArray();
 
             var r2 = interRegions.Select(e => polynomial.Bisect(e.Min, e.Max, epsilon)).WhereHasValue();
 
@@ -230,7 +217,7 @@ namespace Strilanc.PolyNumber.Internal {
         }
         private static May<Range<Frac>> BisectLower(this Polynomial<XTerm> polynomial, Frac maxX, Frac epsilon) {
             var maxCoef = polynomial.Coefficients.MaxBy(e => e.Key.XPower);
-            var decreasingLimitSign = maxCoef.Value.Sign * (maxCoef.Key.XPower % 2 == 0 ? +1 : -1);
+            var decreasingLimitSign = maxCoef.Value.Sign*(maxCoef.Key.XPower%2 == 0 ? +1 : -1);
 
             var maxS = polynomial.EvaluateAt(maxX).Sign;
             if (maxS == decreasingLimitSign) return May.NoValue;
@@ -281,4 +268,3 @@ namespace Strilanc.PolyNumber.Internal {
         }
     }
 }
-

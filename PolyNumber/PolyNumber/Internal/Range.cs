@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Strilanc.PolyNumber.Internal {
+    /// <summary>
+    /// A contiguous set of values, bounded by a minimum and a maximum.
+    /// </summary>
     [DebuggerDisplay("{ToString()}")]
     internal struct Range<T> where T : struct, IComparable<T> {
         public readonly T Min;

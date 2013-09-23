@@ -4,6 +4,10 @@ using Numerics;
 using Int = System.Numerics.BigInteger;
 
 namespace Strilanc.PolyNumber.Internal {
+    /// <summary>
+    /// One of the terms in a polynomial over an X variable, without its coefficient.
+    /// For example, could be the "x^2" term in the polynomial "3x^2 + x + 2".
+    /// </summary>
     [DebuggerDisplay("{ToString()}")]
     internal struct XTerm : ITerm<XTerm>, IComparable<XTerm> {
         public readonly Int XPower;
