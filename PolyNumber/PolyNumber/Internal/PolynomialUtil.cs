@@ -198,6 +198,8 @@ namespace Strilanc.PolyNumber.Internal {
                     .ApproximateRoots(epsilon)
                     .ToArray();
 
+            if (criticalRegions.Length == 0) criticalRegions = new Range<Frac>[] {Frac.Zero };
+
             var lowerRoot = polynomial.BisectLower(criticalRegions.First().Min, epsilon);
             var upperRoot = polynomial.BisectUpper(criticalRegions.Last().Max, epsilon);
             var r0 = new[] {lowerRoot, upperRoot}.WhereHasValue();
